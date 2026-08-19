@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEHA HOMOEOPATHIC CLINIC - Patient Register</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f8;color:#17202a;font-family:Arial,sans-serif}
+.app{max-width:1250px;margin:auto;padding:14px}.head{background:#176b4d;color:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 14px #0002}
+.head h1{margin:0;font-size:24px}.head p{margin:5px 0 0}.panel,.tablebox{background:#fff;border-radius:14px;margin-top:12px;padding:14px;box-shadow:0 3px 12px #0001}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}label{font-size:12px;font-weight:bold;color:#52606d}input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;border:1px solid #cbd5dc;border-radius:8px;padding:9px;margin-top:4px}textarea{resize:vertical;min-height:38px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.actions button{border:0;border-radius:8px;padding:10px 15px;font-weight:bold;cursor:pointer}
+.add{background:#176b4d;color:#fff}.secondary{background:#eaf0f3;color:#263238}.danger{background:#fff0f0;color:#b42318}
+.searchrow{display:flex;gap:9px;margin-top:12px}.searchrow input{margin:0;flex:1}
+.tablebox{overflow:auto;padding:0}table{width:100%;border-collapse:collapse;min-width:1150px}th,td{padding:10px 9px;border-bottom:1px solid #e7ecef;text-align:left;font-size:13px;vertical-align:top}th{background:#f7f9fa;white-space:nowrap}.sn{text-align:center;width:65px}
+.smallbtn{padding:6px 8px;border:0;border-radius:6px;cursor:pointer;background:#eef2f5}.summary{display:flex;justify-content:space-between;margin-top:12px;font-weight:bold}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.searchrow{flex-direction:column}}@media(max-width:500px){.grid{grid-template-columns:1fr}.app{padding:8px}}
+@media print{body{background:#fff}.panel,.actions,.searchrow,.footer{display:none!important}.head{box-shadow:none}.tablebox{box-shadow:none;margin-top:8px}table{min-width:0}th,td{font-size:10px;padding:5px}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="head"><h1>NEHA HOMOEOPATHIC CLINIC</h1><p>Daily Patient Register • Patient Management</p></div>
+
+<div class="panel">
+<div class="grid">
+<div><label>Date</label><input type="date" id="date"></div>
+<div><label>Patient Name *</label><input id="name" placeholder="Patient name"></div>
+<div><label>Age</label><input id="age" type="number" min="0" placeholder="Age"></div>
+<div><label>Sex</label><select id="sex"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+<div><label>Mobile Number</label><input id="mobile" inputmode="numeric" placeholder="Mobile number"></div>
+<div><label>Address</label><input id="address" placeholder="Address"></div>
+<div><label>Diagnosis / Complaint</label><input id="diagnosis" placeholder="Diagnosis or main complaint"></div>
+<div><label>Prescription</label><textarea id="prescription" placeholder="Medicine / prescription"></textarea></div>
+<div><label>Fees</label><input id="fees" type="number" min="0" step="1" placeholder="₹"></div>
+<div><label>Payment</label><select id="payment"><option>Pending</option><option>Paid</option></select></div>
+<div><label>Follow-up Date</label><input id="followup" type="date"></div>
+<div><label>Notes</label><input id="notes" placeholder="Additional notes"></div>
+</div>
+<div class="actions">
+<button class="add" onclick="addPatient()">+ Add Patient</button>
+<button class="secondary" onclick="printRegister()">🖨 Print / Save PDF</button>
+<button class="secondary" onclick="exportCSV()">⬇ Export CSV</button>
+<button class="danger" onclick="clearDay()">Clear Selected Date</button>
+</div>
+<div class="searchrow"><input id="search" placeholder="🔍 Search patient name — searches ALL dates..." oninput="render()"></div>
+</div>
+
+<div class="summary"><span id="dateLabel"></span><span id="count"></span></div>
+<div class="tablebox">
+<table><thead><tr>
+<th class="sn">S.No.</th><th>Patient Name</th><th>Age</th><th>Sex</th><th>Mobile</th><th>Address</th><th>Diagnosis / Complaint</th><th>Prescription</th><th>Fees</th><th>Payment</th><th>Follow-up</th><th>Notes</th><th>Action</th>
+</tr></thead><tbody id="tbody"></tbody></table>
+</div>
+<div class="footer" style="text-align:center;padding:12px;color:#718096;font-size:12px">Records are stored locally in this browser/device.</div>
+</div>
+
+<script>
+const ids=["date","name","age","sex","mobile","address","diagnosis","prescription","fees","payment","followup","notes"];
+const $=id=>document.getElementById(id);
+function today(){let d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+$("date").value=today();
+function key(){return "nehaclinic-v2-"+$("date").value}
+function get(){return JSON.parse(localStorage.getItem(key())||"[]")}
+function save(a){localStorage.setItem(key(),JSON.stringify(a))}
+function addPatient(){
+ let name=$("name").value.trim(); if(!name){alert("Please enter patient name.");$("name").focus();return}
+ let p={};ids.slice(1).forEach(id=>p[id]=$(id).value.trim());
+ p.createdAt=new Date().toISOString();let a=get();a.push(p);save(a);ids.slice(1).forEach(id=>$(id).value="");$("payment").value="Pending";render();$("name").focus();
+}
+$("name").addEventListener("keydown",e=>{if(e.key==="Enter")addPatient()});
+$("date").addEventListener("change",()=>{ render()});
+function esc(x){let d=document.createElement("div");d.textContent=x||"";return d.innerHTML}
+function getAllRecords(){
+ let records=[];
+ for(let i=0;i<localStorage.length;i++){
+   let k=localStorage.key(i);
+   if(k && k.startsWith("nehaclinic-v2-")){
+     let date=k.replace("nehaclinic-v2-","");
+     try{ JSON.parse(localStorage.getItem(k)||"[]").forEach((p,idx)=>records.push({p,date,idx})); }catch(e){}
+   }
+ }
+ return records.sort((a,b)=>(b.date+a.p.createdAt).localeCompare(a.date+b.p.createdAt));
+}
+function render(){
+ let q=$("search").value.toLowerCase().trim();
+ let allToday=get(), allRecords=getAllRecords();
+ let rows=q ? allRecords.filter(x=>Object.values(x.p).some(v=>String(v).toLowerCase().includes(q))) : allToday.map((p,i)=>({p,date:$("date").value,idx:i}));
+ $("tbody").innerHTML=rows.length?rows.map(x=>{let p=x.p;return `<tr>
+<td class="sn">${x.idx+1}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.age)}</td><td>${esc(p.sex)}</td><td>${esc(p.mobile)}</td><td>${esc(p.address)}</td><td>${esc(p.diagnosis)}</td><td>${esc(p.prescription)}</td><td>${p.fees?"₹"+esc(p.fees):""}</td><td>${esc(p.payment)}</td><td>${esc(p.followup)}</td><td>${esc(p.notes)}</td><td><small>${x.date}</small><br><button class="smallbtn" onclick="editFromSearch('${x.date}',${x.idx})">Edit</button> <button class="smallbtn" onclick="delFromSearch('${x.date}',${x.idx})">Delete</button></td>
+</tr>`}).join(""):`<tr><td colspan="13" style="text-align:center;padding:30px;color:#718096">${q?"No matching patient found in any date.":"No patients found for this date."}</td></tr>`;
+ let d=new Date($("date").value+"T00:00:00");
+ $("dateLabel").textContent=q ? "Search results: all saved dates" : "Date: "+d.toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"});
+ $("count").textContent=rows.length+" patient"+(rows.length==1?"":"s");
+}
+function editFromSearch(date,i){
+ $("date").value=date; let a=get(),p=a[i]; ids.slice(1).forEach(id=>$(id).value=p[id]||""); a.splice(i,1);save(a); $("search").value=""; render(); $("name").focus();
+}
+function delFromSearch(date,i){
+ if(confirm("Delete this patient entry?")){let k="nehaclinic-v2-"+date,a=JSON.parse(localStorage.getItem(k)||"[]");a.splice(i,1);localStorage.setItem(k,JSON.stringify(a));render();}
+}
+function del(i){if(confirm("Delete this patient entry?")){let a=get();a.splice(i,1);save(a);render()}}
+function editPatient(i){
+ let a=get(),p=a[i];ids.slice(1).forEach(id=>$(id).value=p[id]||"");a.splice(i,1);save(a);render();$("name").focus();
+}
+function clearDay(){if(confirm("Delete ALL records for the selected date?")){localStorage.removeItem(key());render()}}
+function printRegister(){window.print()}
+function exportCSV(){
+ let a=get();if(!a.length){alert("No records for this date.");return}
+ let headers=["Serial No","Patient Name","Age","Sex","Mobile","Address","Diagnosis","Prescription","Fees","Payment","Follow-up Date","Notes"];
+ let lines=[headers,...a.map((p,i)=>[i+1,p.name,p.age,p.sex,p.mobile,p.address,p.diagnosis,p.prescription,p.fees,p.payment,p.followup,p.notes])];
+ let csv=lines.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+ let blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),aEl=document.createElement("a");
+ aEl.href=url;aEl.download="Patient_Register_"+$("date").value+".csv";aEl.click();URL.revokeObjectURL(url);
+}
+render();
+</script>
+</body>
+</html>
