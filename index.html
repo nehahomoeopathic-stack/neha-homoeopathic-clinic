@@ -8,9 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -55,6 +53,10 @@
       color: #176b4d;
     }
 
+    h3 {
+      color: #176b4d;
+    }
+
     input, textarea, select, button {
       width: 100%;
       padding: 11px;
@@ -87,10 +89,9 @@
     }
 
     .edit-button {
-      background: #176b4d;
       width: auto;
-      padding: 9px 18px;
-      margin-top: 5px;
+      padding: 9px 16px;
+      display: inline-block;
     }
 
     .grid {
@@ -122,10 +123,10 @@
 
     .edit-box {
       background: #f1f7f4;
-      border: 1px solid #c8ddd4;
+      padding: 15px;
       border-radius: 8px;
-      padding: 12px;
       margin-top: 12px;
+      border: 1px solid #c9ddd4;
     }
 
     .hidden {
@@ -189,45 +190,70 @@
   <div id="loginSection" class="card">
     <h2>Clinic Login</h2>
 
-    <input type="email" id="loginEmail" placeholder="Email address">
-    <input type="password" id="loginPassword" placeholder="Password">
+    <input
+      type="email"
+      id="loginEmail"
+      placeholder="Email address"
+    >
 
-    <button onclick="login()">Login</button>
+    <input
+      type="password"
+      id="loginPassword"
+      placeholder="Password"
+    >
+
+    <button type="button" onclick="login()">Login</button>
 
     <div id="loginMessage"></div>
   </div>
+
 
   <!-- APP -->
   <div id="appSection" class="hidden">
 
     <div class="card">
       <div class="topbar">
-        <div>
-          <strong>Clinic Dashboard</strong>
-        </div>
+        <strong>Clinic Dashboard</strong>
 
-        <button class="secondary" onclick="logout()">Logout</button>
+        <button
+          type="button"
+          class="secondary"
+          onclick="logout()"
+        >
+          Logout
+        </button>
       </div>
     </div>
 
+
     <!-- ADD PATIENT -->
     <div class="card">
+
       <h2>Add New Patient</h2>
 
       <div class="grid">
 
         <div>
           <label>Name *</label>
-          <input id="patientName" type="text" placeholder="Patient name">
+          <input
+            id="patientName"
+            type="text"
+            placeholder="Patient name"
+          >
         </div>
 
         <div>
           <label>Age</label>
-          <input id="patientAge" type="number" placeholder="Age">
+          <input
+            id="patientAge"
+            type="number"
+            placeholder="Age"
+          >
         </div>
 
         <div>
           <label>Gender</label>
+
           <select id="patientGender">
             <option value="">Select</option>
             <option>Male</option>
@@ -238,21 +264,37 @@
 
         <div>
           <label>Mobile</label>
-          <input id="patientMobile" type="tel" placeholder="Mobile number">
+          <input
+            id="patientMobile"
+            type="tel"
+            placeholder="Mobile number"
+          >
         </div>
 
       </div>
 
       <label>Address</label>
-      <textarea id="patientAddress" placeholder="Address"></textarea>
 
-      <button onclick="addPatient()">Save Patient</button>
+      <textarea
+        id="patientAddress"
+        placeholder="Address"
+      ></textarea>
+
+      <button
+        type="button"
+        onclick="addPatient()"
+      >
+        Save Patient
+      </button>
 
       <div id="patientMessage"></div>
+
     </div>
+
 
     <!-- SEARCH -->
     <div class="card">
+
       <h2>Search Patient</h2>
 
       <input
@@ -263,26 +305,39 @@
       >
 
       <div id="searchResults"></div>
+
     </div>
 
+
     <!-- PATIENT PROFILE -->
-    <div id="patientSection" class="card hidden">
+    <div
+      id="patientSection"
+      class="card hidden"
+    >
 
       <h2>Patient Profile</h2>
 
       <div id="patientDetails"></div>
 
-      <div id="patientEditBox" class="edit-box hidden">
+      <!-- EDIT PATIENT -->
+      <div
+        id="patientEditBox"
+        class="edit-box hidden"
+      >
 
-        <h3>Edit Patient Details</h3>
+        <h3>Edit Patient</h3>
 
         <label>Name *</label>
-        <input id="editPatientName" type="text">
+        <input id="editPatientName">
 
         <label>Age</label>
-        <input id="editPatientAge" type="number">
+        <input
+          id="editPatientAge"
+          type="number"
+        >
 
         <label>Gender</label>
+
         <select id="editPatientGender">
           <option value="">Select</option>
           <option>Male</option>
@@ -291,16 +346,23 @@
         </select>
 
         <label>Mobile</label>
-        <input id="editPatientMobile" type="tel">
+        <input id="editPatientMobile">
 
         <label>Address</label>
         <textarea id="editPatientAddress"></textarea>
 
-        <button onclick="savePatientEdit()">
+        <button
+          type="button"
+          onclick="savePatientEdit()"
+        >
           Save Patient Changes
         </button>
 
-        <button class="secondary" onclick="cancelPatientEdit()">
+        <button
+          type="button"
+          class="secondary"
+          onclick="cancelPatientEdit()"
+        >
           Cancel
         </button>
 
@@ -308,18 +370,28 @@
 
       </div>
 
+
       <hr>
 
+
+      <!-- VISIT HISTORY -->
       <h2>Visit History</h2>
 
       <div id="visitHistory"></div>
 
+
       <hr>
 
+
+      <!-- ADD VISIT -->
       <h2>Add New Visit</h2>
 
       <label>Visit Date</label>
-      <input id="visitDate" type="date">
+
+      <input
+        id="visitDate"
+        type="date"
+      >
 
       <label>Chief Complaints</label>
       <textarea id="complaints"></textarea>
@@ -334,12 +406,21 @@
       <textarea id="advice"></textarea>
 
       <label>Follow-up Date</label>
-      <input id="followUp" type="date">
+
+      <input
+        id="followUp"
+        type="date"
+      >
 
       <label>Notes</label>
       <textarea id="notes"></textarea>
 
-      <button onclick="addVisit()">Save Visit</button>
+      <button
+        type="button"
+        onclick="addVisit()"
+      >
+        Save Visit
+      </button>
 
       <div id="visitMessage"></div>
 
@@ -347,6 +428,7 @@
 
   </div>
 </div>
+
 
 <script>
 
@@ -380,7 +462,8 @@
         .value.trim();
 
     const password =
-      document.getElementById("loginPassword").value;
+      document.getElementById("loginPassword")
+        .value;
 
     const message =
       document.getElementById("loginMessage");
@@ -398,24 +481,35 @@
       return;
     }
 
-    const { data, error } =
-      await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
+    try {
 
-    if (error) {
+      const result =
+        await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+      if (result.error) {
+
+        showMessage(
+          message,
+          result.error.message,
+          true
+        );
+
+        return;
+      }
+
+      showApp();
+
+    } catch (error) {
 
       showMessage(
         message,
-        error.message,
+        error.message || "Login failed.",
         true
       );
-
-      return;
     }
-
-    showApp();
   }
 
 
@@ -446,14 +540,25 @@
 
   async function checkLogin() {
 
-    const { data } =
-      await supabaseClient.auth.getSession();
+    try {
 
-    if (data.session) {
-      showApp();
+      const result =
+        await supabaseClient.auth.getSession();
+
+      if (result.data && result.data.session) {
+        showApp();
+      }
+
+    } catch (error) {
+
+      console.log("Session check:", error);
     }
   }
 
+
+  // =========================================================
+  // SHOW APP
+  // =========================================================
 
   function showApp() {
 
@@ -479,10 +584,12 @@
         .value.trim();
 
     const age =
-      document.getElementById("patientAge").value;
+      document.getElementById("patientAge")
+        .value;
 
     const gender =
-      document.getElementById("patientGender").value;
+      document.getElementById("patientGender")
+        .value;
 
     const mobile =
       document.getElementById("patientMobile")
@@ -508,7 +615,7 @@
       return;
     }
 
-    const { data, error } =
+    const result =
       await supabaseClient
         .from("patients")
         .insert([{
@@ -521,11 +628,11 @@
         .select()
         .single();
 
-    if (error) {
+    if (result.error) {
 
       showMessage(
         message,
-        error.message,
+        result.error.message,
         true
       );
 
@@ -535,7 +642,7 @@
     showMessage(
       message,
       "Patient saved successfully. Patient ID: " +
-      data.id
+      result.data.id
     );
 
     document.getElementById("patientName").value = "";
@@ -544,7 +651,7 @@
     document.getElementById("patientMobile").value = "";
     document.getElementById("patientAddress").value = "";
 
-    await openPatient(data.id);
+    await openPatient(result.data.id);
   }
 
 
@@ -558,7 +665,7 @@
 
     clearTimeout(searchTimer);
 
-    searchTimer = setTimeout(async () => {
+    searchTimer = setTimeout(async function() {
 
       const search =
         document.getElementById("searchBox")
@@ -573,7 +680,7 @@
         return;
       }
 
-      const { data, error } =
+      const result =
         await supabaseClient
           .from("patients")
           .select("*")
@@ -582,15 +689,17 @@
           )
           .order("name");
 
-      if (error) {
+      if (result.error) {
 
         results.innerHTML =
           `<div class="message error">
-            ${escapeHtml(error.message)}
+            ${escapeHtml(result.error.message)}
           </div>`;
 
         return;
       }
+
+      const data = result.data;
 
       if (!data || data.length === 0) {
 
@@ -602,12 +711,13 @@
         return;
       }
 
-      data.forEach(patient => {
+      data.forEach(function(patient) {
 
         const div =
           document.createElement("div");
 
-        div.className = "patient-result";
+        div.className =
+          "patient-result";
 
         div.innerHTML = `
           <strong>
@@ -638,8 +748,9 @@
           }
         `;
 
-        div.onclick = () =>
+        div.onclick = function() {
           openPatient(patient.id);
+        };
 
         results.appendChild(div);
       });
@@ -654,29 +765,29 @@
 
   async function openPatient(patientId) {
 
-    const { data: patient, error } =
+    const result =
       await supabaseClient
         .from("patients")
         .select("*")
         .eq("id", patientId)
         .single();
 
-    if (error) {
+    if (result.error) {
 
-      alert(error.message);
+      alert(result.error.message);
 
       return;
     }
 
-    currentPatient = patient;
+    currentPatient = result.data;
 
     document.getElementById("patientSection")
       .classList.remove("hidden");
 
+    renderPatientDetails(currentPatient);
+
     document.getElementById("patientEditBox")
       .classList.add("hidden");
-
-    renderPatientDetails(patient);
 
     await loadVisits(patientId);
 
@@ -688,7 +799,7 @@
 
 
   // =========================================================
-  // DISPLAY PATIENT DETAILS
+  // DISPLAY PATIENT
   // =========================================================
 
   function renderPatientDetails(patient) {
@@ -726,6 +837,7 @@
       </p>
 
       <button
+        type="button"
         class="edit-button"
         onclick="editPatient()"
       >
@@ -794,10 +906,12 @@
         .value.trim();
 
     const age =
-      document.getElementById("editPatientAge").value;
+      document.getElementById("editPatientAge")
+        .value;
 
     const gender =
-      document.getElementById("editPatientGender").value;
+      document.getElementById("editPatientGender")
+        .value;
 
     const mobile =
       document.getElementById("editPatientMobile")
@@ -810,8 +924,6 @@
     const message =
       document.getElementById("editPatientMessage");
 
-    message.innerHTML = "";
-
     if (!name) {
 
       showMessage(
@@ -823,7 +935,7 @@
       return;
     }
 
-    const { data, error } =
+    const result =
       await supabaseClient
         .from("patients")
         .update({
@@ -837,37 +949,35 @@
         .select()
         .single();
 
-    if (error) {
+    if (result.error) {
 
       showMessage(
         message,
-        error.message,
+        result.error.message,
         true
       );
 
       return;
     }
 
-    currentPatient = data;
-
-    showMessage(
-      message,
-      "Patient details updated successfully."
-    );
-
-    renderPatientDetails(currentPatient);
+    currentPatient = result.data;
 
     document.getElementById("patientEditBox")
       .classList.add("hidden");
 
-    await loadVisits(currentPatient.id);
+    renderPatientDetails(currentPatient);
+
+    showMessage(
+      document.getElementById("patientMessage"),
+      "Patient details updated successfully."
+    );
 
     await searchPatients();
   }
 
 
   // =========================================================
-  // LOAD ALL VISITS
+  // LOAD VISITS
   // =========================================================
 
   async function loadVisits(patientId) {
@@ -878,7 +988,7 @@
     history.innerHTML =
       "Loading history...";
 
-    const { data, error } =
+    const result =
       await supabaseClient
         .from("visits")
         .select("*")
@@ -887,15 +997,17 @@
           ascending: false
         });
 
-    if (error) {
+    if (result.error) {
 
       history.innerHTML =
         `<div class="message error">
-          ${escapeHtml(error.message)}
+          ${escapeHtml(result.error.message)}
         </div>`;
 
       return;
     }
+
+    const data = result.data;
 
     if (!data || data.length === 0) {
 
@@ -909,7 +1021,7 @@
 
     history.innerHTML = "";
 
-    data.forEach(visit => {
+    data.forEach(function(visit) {
 
       const div =
         document.createElement("div");
@@ -929,19 +1041,4 @@
                 ${formatText(visit.complaints)}
               </p>
             `
-            : ""
-        }
-
-        ${
-          visit.diagnosis
-            ? `
-              <p>
-                <strong>Diagnosis:</strong><br>
-                ${formatText(visit.diagnosis)}
-              </p>
-            `
-            : ""
-        }
-
-        ${
-         
+           
