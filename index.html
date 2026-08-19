@@ -2,829 +2,308 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>NEHA HOMOEOPATHIC CLINIC</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- PDF LIBRARIES -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
 <style>
-
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7f6;color:#222}
+header{background:#176b4d;color:#fff;padding:18px;text-align:center}
+header h1{margin:0;font-size:24px}
+header p{margin:5px 0 0}
+.container{max-width:1150px;margin:auto;padding:15px}
+.card{background:#fff;padding:18px;margin-bottom:18px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+h2,h3{color:#176b4d}
+input,textarea,select,button{width:100%;padding:11px;margin-top:7px;margin-bottom:12px;border:1px solid #ccc;border-radius:7px;font-size:15px}
+textarea{min-height:90px;resize:vertical}
+button{background:#176b4d;color:#fff;border:0;cursor:pointer;font-weight:bold}
+button:hover{opacity:.9}
+.secondary{background:#555}
+.blue{background:#2563eb}
+.orange{background:#b45309}
+.red{background:#c62828}
+.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.topbar button{width:auto}
+.message{padding:10px;border-radius:7px;margin-bottom:12px;background:#eef7f2}
+.error{background:#ffe9e7;color:#9b1c1c}
+.patient-result{padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:8px;cursor:pointer;background:#fafafa}
+.patient-result:hover{background:#eef7f2}
+.visit{border-left:4px solid #176b4d;padding:12px;margin-bottom:12px;background:#f8faf9;border-radius:6px}
+.visit-buttons{display:flex;gap:8px;margin-top:12px}
+.visit-buttons button{width:auto;margin:0;padding:8px 14px}
+.edit-box{background:#f1f7f4;padding:15px;border-radius:8px;margin-top:10px}
+.dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:#eef7f2;border:1px solid #d4e8df;border-radius:10px;padding:15px;text-align:center}
+.stat strong{display:block;font-size:28px;color:#176b4d;margin-top:5px}
+.action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.export-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.small{font-size:13px;color:#666}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:15px;z-index:1000}
+.modal-content{background:#fff;width:min(700px,100%);max-height:90vh;overflow:auto;border-radius:12px;padding:20px}
+.modal-buttons{display:flex;gap:10px}
+.modal-buttons button{flex:1}
+@media(max-width:700px){
+.grid,.dashboard,.action-grid,.export-grid{grid-template-columns:1fr}
+.topbar{flex-direction:column;align-items:stretch}
+.topbar button{width:100%}
+.visit-buttons{flex-direction:column}
+.visit-buttons button{width:100%}
 }
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f7f6;
-  color: #222;
-}
-
-header {
-  background: #176b4d;
-  color: white;
-  padding: 18px;
-  text-align: center;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 24px;
-}
-
-header p {
-  margin: 5px 0 0;
-}
-
-.container {
-  max-width: 1100px;
-  margin: auto;
-  padding: 15px;
-}
-
-.card {
-  background: white;
-  padding: 18px;
-  margin-bottom: 18px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
-}
-
-h2,
-h3 {
-  color: #176b4d;
-}
-
-input,
-textarea,
-select,
-button {
-  width: 100%;
-  padding: 11px;
-  margin-top: 7px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 7px;
-  font-size: 15px;
-}
-
-textarea {
-  min-height: 90px;
-  resize: vertical;
-}
-
-button {
-  background: #176b4d;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  opacity: .9;
-}
-
-button:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
-
-.secondary {
-  background: #555;
-}
-
-.edit {
-  background: #176b4d;
-}
-
-.danger {
-  background: #c62828;
-}
-
-.blue {
-  background: #2563eb;
-}
-
-.orange {
-  background: #b45309;
-}
-
-.hidden {
-  display: none !important;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 12px;
-}
-
-.patient-result {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-top: 8px;
-  cursor: pointer;
-  background: #fafafa;
-}
-
-.patient-result:hover {
-  background: #eef7f2;
-}
-
-.visit {
-  border-left: 4px solid #176b4d;
-  padding: 12px;
-  margin-bottom: 12px;
-  background: #f8faf9;
-  border-radius: 6px;
-}
-
-.message {
-  padding: 10px;
-  border-radius: 7px;
-  margin-bottom: 12px;
-  background: #eef7f2;
-}
-
-.error {
-  background: #ffe9e7;
-  color: #9b1c1c;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.topbar button {
-  width: auto;
-}
-
-.edit-box {
-  background: #f1f7f4;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 10px;
-}
-
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 12px;
-}
-
-.stat {
-  background: #eef7f2;
-  border: 1px solid #d4e8df;
-  border-radius: 10px;
-  padding: 15px;
-  text-align: center;
-}
-
-.stat strong {
-  display: block;
-  font-size: 28px;
-  color: #176b4d;
-  margin-top: 5px;
-}
-
-.action-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 10px;
-}
-
-.visit-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.visit-actions button {
-  width: auto;
-  margin: 0;
-  padding: 8px 12px;
-}
-
-.small {
-  font-size: 13px;
-  color: #666;
-}
-
-.export-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-}
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  width: min(700px,100%);
-  max-height: 90vh;
-  overflow: auto;
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.modal-actions button {
-  flex: 1;
-}
-
-@media(max-width:700px) {
-
-  .grid,
-  .dashboard,
-  .action-grid,
-  .export-row {
-    grid-template-columns: 1fr;
-  }
-
-  header h1 {
-    font-size: 20px;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .topbar button {
-    width: 100%;
-  }
-
-  .visit-actions {
-    flex-direction: column;
-  }
-
-  .visit-actions button {
-    width: 100%;
-  }
-
-}
-
 </style>
 </head>
 
 <body>
 
 <header>
-
 <h1>NEHA HOMOEOPATHIC CLINIC</h1>
-
 <p>Patient Management System</p>
-
 </header>
-
 
 <div class="container">
 
-
-<!-- =====================================================
-LOGIN
-===================================================== -->
-
+<!-- LOGIN -->
 <div id="loginSection" class="card">
-
 <h2>Clinic Login</h2>
 
-<input
-id="loginEmail"
-type="email"
-placeholder="Email address"
->
+<input id="loginEmail" type="email" placeholder="Email address">
+<input id="loginPassword" type="password" placeholder="Password">
 
-<input
-id="loginPassword"
-type="password"
-placeholder="Password"
->
-
-<button
-id="loginButton"
-type="button"
->
-Login
-</button>
+<button id="loginButton">Login</button>
 
 <div id="loginMessage"></div>
-
 </div>
 
 
-
-<!-- =====================================================
-APPLICATION
-===================================================== -->
-
+<!-- APPLICATION -->
 <div id="appSection" class="hidden">
 
-
-<!-- TOP BAR -->
-
+<!-- DASHBOARD -->
 <div class="card">
-
 <div class="topbar">
-
 <strong>Clinic Dashboard</strong>
-
-<button
-id="logoutButton"
-class="secondary"
-type="button"
->
-Logout
-</button>
-
+<button id="logoutButton" class="secondary">Logout</button>
 </div>
-
 </div>
 
 
-
-<!-- =====================================================
-TODAY DASHBOARD
-===================================================== -->
-
+<!-- TODAY -->
 <div class="card">
 
-<h2>
-Today's Report —
-<span id="todayDisplay"></span>
-</h2>
+<h2>Today's Report - <span id="todayText"></span></h2>
 
 <div class="dashboard">
 
 <div class="stat">
-
 Patients Today
-
-<strong id="todayPatientCount">
-0
-</strong>
-
+<strong id="todayPatients">0</strong>
 </div>
 
-
 <div class="stat">
-
 Total Payment
-
-<strong id="todayPayment">
-₹0
-</strong>
-
+<strong id="todayPayment">₹0</strong>
 </div>
-
 
 <div class="stat">
-
-Today's Date
-
-<strong id="todayShortDate">
--
-</strong>
-
+Date
+<strong id="todayDate">-</strong>
 </div>
 
 </div>
 
-<br>
-
-<button
-id="printTodayButton"
-class="blue"
-type="button"
->
+<button id="printTodayButton" class="blue">
 🖨️ Print Today's Report
 </button>
 
 </div>
 
 
-
-<!-- =====================================================
-MONTHLY BACKUP
-===================================================== -->
-
+<!-- MONTHLY BACKUP -->
 <div class="card">
 
-<h2>Monthly Backup / Export</h2>
+<h2>Monthly Backup</h2>
 
 <p class="small">
-
-Download your monthly patient records for backup.
-
+Download your clinic records every month to keep a backup.
 </p>
 
-<div class="export-row">
+<div class="export-grid">
 
 <div>
-
 <label>Month</label>
-
-<select id="exportMonth"></select>
-
+<select id="backupMonth"></select>
 </div>
 
-
 <div>
-
 <label>Year</label>
-
-<select id="exportYear"></select>
+<select id="backupYear"></select>
+</div>
 
 </div>
 
-
-<div>
-
-<button
-id="exportPdfButton"
-class="orange"
-type="button"
->
-📄 Monthly PDF
+<button id="monthlyPdfButton" class="orange">
+📄 Monthly PDF / Print
 </button>
 
-</div>
-
-</div>
-
-
-<button
-id="exportTextButton"
-class="secondary"
-type="button"
->
+<button id="monthlyTextButton" class="secondary">
 📝 Monthly Text Backup
 </button>
 
-<div id="exportMessage"></div>
+<div id="backupMessage"></div>
 
 </div>
 
 
-
-<!-- =====================================================
-ADD PATIENT
-===================================================== -->
-
+<!-- ADD PATIENT -->
 <div class="card">
 
 <h2>Add New Patient</h2>
 
 <div class="grid">
 
-
 <div>
-
 <label>Name *</label>
-
-<input
-id="patientName"
-type="text"
-placeholder="Patient name"
->
-
+<input id="patientName" placeholder="Patient name">
 </div>
 
-
 <div>
-
 <label>Age</label>
-
-<input
-id="patientAge"
-type="number"
-placeholder="Age"
->
-
+<input id="patientAge" type="number" placeholder="Age">
 </div>
 
-
 <div>
-
 <label>Gender</label>
-
 <select id="patientGender">
-
-<option value="">
-Select
-</option>
-
-<option value="Male">
-Male
-</option>
-
-<option value="Female">
-Female
-</option>
-
-<option value="Other">
-Other
-</option>
-
+<option value="">Select</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
 </select>
-
 </div>
-
 
 <div>
-
 <label>Mobile</label>
-
-<input
-id="patientMobile"
-type="tel"
-placeholder="Mobile number"
->
-
+<input id="patientMobile" type="tel" placeholder="Mobile number">
 </div>
 
-
 </div>
-
 
 <label>Address</label>
+<textarea id="patientAddress" placeholder="Address"></textarea>
 
-<textarea
-id="patientAddress"
-placeholder="Address"
-></textarea>
-
-
-<button
-id="savePatientButton"
-type="button"
->
-Save Patient
-</button>
-
+<button id="savePatientButton">Save Patient</button>
 
 <div id="patientMessage"></div>
 
 </div>
 
 
-
-<!-- =====================================================
-SEARCH
-===================================================== -->
-
+<!-- SEARCH -->
 <div class="card">
 
 <h2>Search Patient</h2>
 
-<input
-id="searchBox"
-type="text"
-placeholder="Search by name or mobile"
->
+<input id="searchBox" placeholder="Search by name or mobile">
 
 <div id="searchResults"></div>
 
 </div>
 
 
+<!-- PATIENT PROFILE -->
+<div id="patientSection" class="card hidden">
 
-<!-- =====================================================
-PATIENT PROFILE
-===================================================== -->
-
-<div
-id="patientSection"
-class="card hidden"
->
-
-<h2>
-Patient Profile
-</h2>
-
+<h2>Patient Profile</h2>
 
 <div id="patientDetails"></div>
 
-
 <div class="action-grid">
 
-<button
-id="editPatientButton"
-type="button"
->
+<button id="editPatientButton">
 ✏️ Edit Patient
 </button>
 
-
-<button
-id="printPatientButton"
-class="blue"
-type="button"
->
-🖨️ Print All Patient Records
+<button id="printPatientButton" class="blue">
+🖨️ Print Complete Record
 </button>
 
 </div>
 
 
-
 <!-- PATIENT EDIT -->
+<div id="patientEditBox" class="edit-box hidden">
 
-<div
-id="patientEditBox"
-class="edit-box hidden"
->
-
-<h3>
-Edit Patient
-</h3>
-
+<h3>Edit Patient</h3>
 
 <label>Name</label>
-
 <input id="editName">
 
-
 <label>Age</label>
-
-<input
-id="editAge"
-type="number"
->
-
+<input id="editAge" type="number">
 
 <label>Gender</label>
-
 <select id="editGender">
-
-<option value="">
-Select
-</option>
-
-<option value="Male">
-Male
-</option>
-
-<option value="Female">
-Female
-</option>
-
-<option value="Other">
-Other
-</option>
-
+<option value="">Select</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
 </select>
 
-
 <label>Mobile</label>
-
 <input id="editMobile">
 
-
 <label>Address</label>
-
 <textarea id="editAddress"></textarea>
 
+<button id="savePatientEditButton">Save Changes</button>
 
-<button
-id="savePatientEditButton"
-type="button"
->
-Save Changes
-</button>
-
-
-<button
-id="cancelPatientEditButton"
-class="secondary"
-type="button"
->
+<button id="cancelPatientEditButton" class="secondary">
 Cancel
 </button>
-
 
 <div id="editPatientMessage"></div>
 
 </div>
 
 
-
 <hr>
 
-
-<h2>
-Visit History
-</h2>
-
+<h2>Visit History</h2>
 
 <div id="visitHistory"></div>
 
 
-
 <hr>
 
 
+<!-- ADD VISIT -->
+<h2>Add New Visit</h2>
 
-<!-- =====================================================
-ADD VISIT
-===================================================== -->
+<label>Visit Date</label>
+<input id="visitDate" type="date">
 
-<h2>
-Add New Visit
-</h2>
-
-
-<label>
-Visit Date
-</label>
-
-<input
-id="visitDate"
-type="date"
->
-
-
-<label>
-Chief Complaints
-</label>
-
+<label>Chief Complaints</label>
 <textarea id="complaints"></textarea>
 
-
-<label>
-Diagnosis
-</label>
-
+<label>Diagnosis</label>
 <textarea id="diagnosis"></textarea>
 
-
-<label>
-Prescription / Medicines
-</label>
-
+<label>Prescription / Medicines</label>
 <textarea id="prescription"></textarea>
 
-
-<label>
-Advice
-</label>
-
+<label>Advice</label>
 <textarea id="advice"></textarea>
 
+<label>Follow-up Date</label>
+<input id="followUp" type="date">
 
-<label>
-Follow-up Date
-</label>
+<label>Fee Payment (₹)</label>
+<input id="feePayment" type="number" min="0" step="0.01" placeholder="Enter amount">
 
-<input
-id="followUp"
-type="date"
->
-
-
-<label>
-Fee Payment (₹)
-</label>
-
-<input
-id="feePayment"
-type="number"
-min="0"
-step="0.01"
-placeholder="Enter amount paid"
->
-
-
-<button
-id="saveVisitButton"
-type="button"
->
-Save Visit
-</button>
-
+<button id="saveVisitButton">Save Visit</button>
 
 <div id="visitMessage"></div>
 
@@ -832,110 +311,46 @@ Save Visit
 
 </div>
 
-</div>
 
-
-
-<!-- =====================================================
-EDIT VISIT MODAL
-===================================================== -->
-
-<div
-id="visitModal"
-class="modal hidden"
->
+<!-- EDIT VISIT -->
+<div id="visitModal" class="modal hidden">
 
 <div class="modal-content">
 
-<h2>
-Edit Visit
-</h2>
+<h2>Edit Visit</h2>
 
+<input id="editVisitId" type="hidden">
 
-<input
-id="editVisitId"
-type="hidden"
->
+<label>Visit Date</label>
+<input id="editVisitDate" type="date">
 
-
-<label>
-Visit Date
-</label>
-
-<input
-id="editVisitDate"
-type="date"
->
-
-
-<label>
-Chief Complaints
-</label>
-
+<label>Chief Complaints</label>
 <textarea id="editComplaints"></textarea>
 
-
-<label>
-Diagnosis
-</label>
-
+<label>Diagnosis</label>
 <textarea id="editDiagnosis"></textarea>
 
-
-<label>
-Prescription / Medicines
-</label>
-
+<label>Prescription / Medicines</label>
 <textarea id="editPrescription"></textarea>
 
-
-<label>
-Advice
-</label>
-
+<label>Advice</label>
 <textarea id="editAdvice"></textarea>
 
+<label>Follow-up Date</label>
+<input id="editFollowUp" type="date">
 
-<label>
-Follow-up Date
-</label>
-
-<input
-id="editFollowUp"
-type="date"
->
-
-
-<label>
-Fee Payment (₹)
-</label>
-
-<input
-id="editFeePayment"
-type="number"
-min="0"
-step="0.01"
->
-
+<label>Fee Payment (₹)</label>
+<input id="editFeePayment" type="number" min="0" step="0.01">
 
 <div id="editVisitMessage"></div>
 
+<div class="modal-buttons">
 
-<div class="modal-actions">
-
-<button
-id="saveVisitEditButton"
-type="button"
->
-Save Visit Changes
+<button id="saveEditedVisitButton">
+Save Changes
 </button>
 
-
-<button
-id="cancelVisitEditButton"
-class="secondary"
-type="button"
->
+<button id="cancelVisitEditButton" class="secondary">
 Cancel
 </button>
 
@@ -946,12 +361,11 @@ Cancel
 </div>
 
 
-
 <script>
 
-/* =====================================================
+/* =========================================================
 SUPABASE
-===================================================== */
+========================================================= */
 
 const SUPABASE_URL =
 "https://snoyzbsnbhjxzemuoewe.supabase.co";
@@ -966,104 +380,19 @@ SUPABASE_PUBLISHABLE_KEY
 );
 
 
+/* =========================================================
+GLOBAL
+========================================================= */
 
-/* =====================================================
-GLOBAL VARIABLES
-===================================================== */
-
-let currentPatient = null;
-
-let currentVisits = [];
+let currentPatient=null;
+let currentVisits=[];
 
 
+/* =========================================================
+HELPERS
+========================================================= */
 
-/* =====================================================
-DATE FUNCTIONS
-===================================================== */
-
-function localDateISO(date = new Date()) {
-
-const year =
-date.getFullYear();
-
-const month =
-String(date.getMonth() + 1)
-.padStart(2,"0");
-
-const day =
-String(date.getDate())
-.padStart(2,"0");
-
-return `${year}-${month}-${day}`;
-
-}
-
-
-function formatShortDate(value) {
-
-if (!value) return "";
-
-const parts =
-String(value)
-.substring(0,10)
-.split("-");
-
-if (parts.length !== 3) {
-return value;
-}
-
-const months = [
-
-"JAN",
-"FEB",
-"MAR",
-"APR",
-"MAY",
-"JUN",
-"JUL",
-"AUG",
-"SEP",
-"OCT",
-"NOV",
-"DEC"
-
-];
-
-return (
-
-parts[2] +
-" " +
-months[Number(parts[1]) - 1] +
-" " +
-parts[0]
-
-);
-
-}
-
-
-function formatMoney(value) {
-
-return "₹" +
-
-Number(value || 0)
-.toLocaleString(
-"en-IN",
-{
-minimumFractionDigits: 0,
-maximumFractionDigits: 2
-}
-);
-
-}
-
-
-
-/* =====================================================
-HTML HELPERS
-===================================================== */
-
-function escapeHtml(value) {
+function escapeHtml(value){
 
 return String(value ?? "")
 .replace(/&/g,"&amp;")
@@ -1075,208 +404,182 @@ return String(value ?? "")
 }
 
 
-function formatText(value) {
+function formatText(value){
 
-return escapeHtml(value)
-.replace(/\n/g,"<br>");
+return escapeHtml(value).replace(/\n/g,"<br>");
+
+}
+
+
+function getLocalDate(){
+
+const d=new Date();
+
+const year=d.getFullYear();
+
+const month=String(d.getMonth()+1).padStart(2,"0");
+
+const day=String(d.getDate()).padStart(2,"0");
+
+return `${year}-${month}-${day}`;
 
 }
 
 
+function shortDate(date){
 
-/* =====================================================
-LOGIN
-===================================================== */
+if(!date)return "";
 
-document
-.getElementById("loginButton")
-.addEventListener(
-"click",
-async function() {
+const p=String(date).substring(0,10).split("-");
 
-const email =
-document
-.getElementById("loginEmail")
-.value
-.trim();
+if(p.length!==3)return date;
 
-const password =
-document
-.getElementById("loginPassword")
-.value;
+const months=[
+"JAN","FEB","MAR","APR","MAY","JUN",
+"JUL","AUG","SEP","OCT","NOV","DEC"
+];
 
-const message =
-document
-.getElementById("loginMessage");
-
-message.innerHTML = "";
-
-if (!email || !password) {
-
-message.innerHTML =
-'<div class="message error">' +
-'Enter email and password.' +
-'</div>';
-
-return;
+return `${p[2]} ${months[Number(p[1])-1]} ${p[0]}`;
 
 }
 
-const button =
-document.getElementById("loginButton");
 
-button.disabled = true;
+function money(value){
 
-button.innerText =
-"Logging in...";
-
-try {
-
-const result =
-await supabaseClient
-.auth
-.signInWithPassword({
-
-email: email,
-
-password: password
-
+return "₹"+Number(value||0).toLocaleString("en-IN",{
+minimumFractionDigits:0,
+maximumFractionDigits:2
 });
 
+}
 
-if (result.error) {
 
-message.innerHTML =
-'<div class="message error">' +
-escapeHtml(
-result.error.message
-) +
+/* =========================================================
+LOGIN
+========================================================= */
+
+document.getElementById("loginButton")
+.addEventListener("click",async()=>{
+
+const email=
+document.getElementById("loginEmail").value.trim();
+
+const password=
+document.getElementById("loginPassword").value;
+
+const message=
+document.getElementById("loginMessage");
+
+message.innerHTML="";
+
+if(!email||!password){
+
+message.innerHTML=
+'<div class="message error">Enter email and password.</div>';
+
+return;
+}
+
+const button=
+document.getElementById("loginButton");
+
+button.disabled=true;
+button.innerText="Logging in...";
+
+try{
+
+const {data,error}=
+await supabaseClient.auth.signInWithPassword({
+email,
+password
+});
+
+if(error){
+
+message.innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
 return;
-
 }
 
 showApp();
 
-}
+}catch(error){
 
-catch(error) {
-
-message.innerHTML =
-'<div class="message error">' +
-escapeHtml(error.message) +
+message.innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
-}
+}finally{
 
-finally {
-
-button.disabled = false;
-
-button.innerText =
-"Login";
+button.disabled=false;
+button.innerText="Login";
 
 }
 
 });
 
 
-
-/* =====================================================
+/* =========================================================
 LOGOUT
-===================================================== */
+========================================================= */
 
-document
-.getElementById("logoutButton")
-.addEventListener(
-"click",
-async function() {
+document.getElementById("logoutButton")
+.addEventListener("click",async()=>{
 
-await supabaseClient
-.auth
-.signOut();
+await supabaseClient.auth.signOut();
 
-currentPatient = null;
+currentPatient=null;
+currentVisits=[];
 
-currentVisits = [];
+document.getElementById("appSection")
+.classList.add("hidden");
 
-document
-.getElementById("appSection")
-.classList
-.add("hidden");
-
-document
-.getElementById("loginSection")
-.classList
-.remove("hidden");
+document.getElementById("loginSection")
+.classList.remove("hidden");
 
 });
 
 
+/* =========================================================
+SHOW APP
+========================================================= */
 
-/* =====================================================
-SHOW APPLICATION
-===================================================== */
+function showApp(){
 
-function showApp() {
+document.getElementById("loginSection")
+.classList.add("hidden");
 
-document
-.getElementById("loginSection")
-.classList
-.add("hidden");
+document.getElementById("appSection")
+.classList.remove("hidden");
 
-document
-.getElementById("appSection")
-.classList
-.remove("hidden");
+const today=getLocalDate();
 
+document.getElementById("visitDate").value=today;
 
-const today =
-localDateISO();
+document.getElementById("todayText").innerText=shortDate(today);
 
+document.getElementById("todayDate").innerText=shortDate(today);
 
-document
-.getElementById("visitDate")
-.value =
-today;
-
-
-document
-.getElementById("todayDisplay")
-.textContent =
-formatShortDate(today);
-
-
-document
-.getElementById("todayShortDate")
-.textContent =
-formatShortDate(today);
-
-
-setupExportSelectors();
+setupBackup();
 
 loadTodayReport();
 
 }
 
 
-
-/* =====================================================
+/* =========================================================
 CHECK LOGIN
-===================================================== */
+========================================================= */
 
-async function checkLogin() {
+async function checkLogin(){
 
-const result =
-await supabaseClient
-.auth
-.getSession();
+const {data}=await supabaseClient.auth.getSession();
 
-if (
-result.data &&
-result.data.session
-) {
+if(data && data.session){
 
 showApp();
 
@@ -1285,430 +588,228 @@ showApp();
 }
 
 
-
-/* =====================================================
+/* =========================================================
 TODAY REPORT
-===================================================== */
+========================================================= */
 
-async function loadTodayReport() {
+async function loadTodayReport(){
 
-const today =
-localDateISO();
+const today=getLocalDate();
 
-
-const result =
+const {data,error}=
 await supabaseClient
 .from("visits")
-.select(
-"id, patient_id, fee_payment"
-)
-.eq(
-"visit_date",
-today
-);
+.select("id,patient_id,fee_payment")
+.eq("visit_date",today);
 
+if(error){
 
-if (result.error) {
-
-console.error(
-result.error
-);
-
+console.error(error);
 return;
 
 }
 
+const visits=data||[];
 
-const rows =
-result.data || [];
+let total=0;
 
+visits.forEach(v=>{
+total+=Number(v.fee_payment||0);
+});
 
-const total =
-rows.reduce(
-function(sum,row) {
+document.getElementById("todayPatients")
+.innerText=visits.length;
 
-return sum +
-Number(
-row.fee_payment || 0
-);
-
-},
-0
-);
-
-
-document
-.getElementById("todayPatientCount")
-.textContent =
-rows.length;
-
-
-document
-.getElementById("todayPayment")
-.textContent =
-formatMoney(total);
+document.getElementById("todayPayment")
+.innerText=money(total);
 
 }
 
 
-
-/* =====================================================
-PRINT TODAY BUTTON
-===================================================== */
-
-document
-.getElementById("printTodayButton")
-.addEventListener(
-"click",
-printTodayReport
-);
-
-
-
-/* =====================================================
+/* =========================================================
 SAVE PATIENT
-===================================================== */
+========================================================= */
 
-document
-.getElementById("savePatientButton")
-.addEventListener(
-"click",
-async function() {
+document.getElementById("savePatientButton")
+.addEventListener("click",async()=>{
 
-const name =
-document
-.getElementById("patientName")
-.value
-.trim();
+const name=
+document.getElementById("patientName").value.trim();
 
-const age =
-document
-.getElementById("patientAge")
-.value;
+const age=
+document.getElementById("patientAge").value;
 
-const gender =
-document
-.getElementById("patientGender")
-.value;
+const gender=
+document.getElementById("patientGender").value;
 
-const mobile =
-document
-.getElementById("patientMobile")
-.value
-.trim();
+const mobile=
+document.getElementById("patientMobile").value.trim();
 
-const address =
-document
-.getElementById("patientAddress")
-.value
-.trim();
+const address=
+document.getElementById("patientAddress").value.trim();
 
-const message =
-document
-.getElementById("patientMessage");
+const message=
+document.getElementById("patientMessage");
 
-message.innerHTML = "";
+message.innerHTML="";
 
+if(!name){
 
-if (!name) {
-
-message.innerHTML =
-'<div class="message error">' +
-'Patient name is required.' +
-'</div>';
+message.innerHTML=
+'<div class="message error">Patient name is required.</div>';
 
 return;
-
 }
 
-
-const result =
+const {data,error}=
 await supabaseClient
 .from("patients")
 .insert([{
-
-name: name,
-
-age:
-age
-? parseInt(age)
-: null,
-
-gender:
-gender || null,
-
-mobile:
-mobile || null,
-
-address:
-address || null
-
+name:name,
+age:age?parseInt(age):null,
+gender:gender||null,
+mobile:mobile||null,
+address:address||null
 }])
 .select()
 .single();
 
+if(error){
 
-if (result.error) {
-
-message.innerHTML =
-'<div class="message error">' +
-escapeHtml(
-result.error.message
-) +
+message.innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
 return;
-
 }
 
-
-message.innerHTML =
-'<div class="message">' +
-'Patient saved successfully. ID: ' +
-escapeHtml(result.data.id) +
+message.innerHTML=
+'<div class="message">Patient saved successfully. Patient ID: '+
+escapeHtml(data.id)+
 '</div>';
 
+document.getElementById("patientName").value="";
+document.getElementById("patientAge").value="";
+document.getElementById("patientGender").value="";
+document.getElementById("patientMobile").value="";
+document.getElementById("patientAddress").value="";
 
-document
-.getElementById("patientName")
-.value = "";
-
-document
-.getElementById("patientAge")
-.value = "";
-
-document
-.getElementById("patientGender")
-.value = "";
-
-document
-.getElementById("patientMobile")
-.value = "";
-
-document
-.getElementById("patientAddress")
-.value = "";
-
-
-openPatient(
-result.data.id
-);
+openPatient(data.id);
 
 });
 
 
-
-/* =====================================================
+/* =========================================================
 SEARCH
-===================================================== */
+========================================================= */
 
 let searchTimer;
 
+document.getElementById("searchBox")
+.addEventListener("input",()=>{
 
-document
-.getElementById("searchBox")
-.addEventListener(
-"input",
-function() {
+clearTimeout(searchTimer);
 
-clearTimeout(
-searchTimer
-);
-
-searchTimer =
-setTimeout(
-searchPatients,
-300
-);
+searchTimer=setTimeout(searchPatients,300);
 
 });
 
 
+async function searchPatients(){
 
-async function searchPatients() {
+const search=
+document.getElementById("searchBox").value.trim();
 
-const search =
-document
-.getElementById("searchBox")
-.value
-.trim();
+const results=
+document.getElementById("searchResults");
 
+results.innerHTML="";
 
-const results =
-document
-.getElementById("searchResults");
+if(!search)return;
 
-results.innerHTML = "";
-
-
-if (!search) {
-
-return;
-
-}
-
-
-const result =
+const {data,error}=
 await supabaseClient
 .from("patients")
 .select("*")
 .or(
-"name.ilike.%" +
-search +
-"%,mobile.ilike.%" +
-search +
-"%"
+"name.ilike.%"+search+"%,mobile.ilike.%"+search+"%"
 )
 .order("name");
 
+if(error){
 
-if (result.error) {
-
-results.innerHTML =
-'<div class="message error">' +
-escapeHtml(
-result.error.message
-) +
+results.innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
 return;
-
 }
 
+if(!data||data.length===0){
 
-if (
-!result.data ||
-result.data.length === 0
-) {
-
-results.innerHTML =
-'<div class="message">' +
-'No patient found.' +
-'</div>';
+results.innerHTML=
+'<div class="message">No patient found.</div>';
 
 return;
-
 }
 
+data.forEach(patient=>{
 
-result.data.forEach(
-function(patient) {
+const div=document.createElement("div");
 
-const div =
-document.createElement("div");
+div.className="patient-result";
 
-div.className =
-"patient-result";
+div.innerHTML=
+"<strong>"+escapeHtml(patient.name)+"</strong><br>"+
+"Patient ID: "+escapeHtml(patient.id)+"<br>"+
+(patient.age?"Age: "+patient.age+"<br>":"")+
+(patient.gender?
+"Gender: "+escapeHtml(patient.gender)+"<br>":"")+
+(patient.mobile?
+"Mobile: "+escapeHtml(patient.mobile):"");
 
-
-div.innerHTML =
-
-"<strong>" +
-escapeHtml(patient.name) +
-"</strong><br>" +
-
-"Patient ID: " +
-escapeHtml(patient.id) +
-"<br>" +
-
-(
-patient.age
-?
-"Age: " +
-escapeHtml(patient.age) +
-"<br>"
-:
-""
-) +
-
-(
-patient.gender
-?
-"Gender: " +
-escapeHtml(patient.gender) +
-"<br>"
-:
-""
-) +
-
-(
-patient.mobile
-?
-"Mobile: " +
-escapeHtml(patient.mobile)
-:
-""
-);
-
-
-div.addEventListener(
-"click",
-function() {
-
-openPatient(
-patient.id
-);
-
+div.addEventListener("click",()=>{
+openPatient(patient.id);
 });
 
-
-results.appendChild(
-div
-);
+results.appendChild(div);
 
 });
 
 }
 
 
-
-/* =====================================================
+/* =========================================================
 OPEN PATIENT
-===================================================== */
+========================================================= */
 
-async function openPatient(
-patientId
-) {
+async function openPatient(patientId){
 
-const result =
+const {data,error}=
 await supabaseClient
 .from("patients")
 .select("*")
 .eq("id",patientId)
 .single();
 
+if(error){
 
-if (result.error) {
-
-alert(
-result.error.message
-);
-
+alert(error.message);
 return;
-
 }
 
+currentPatient=data;
 
-currentPatient =
-result.data;
-
-
-document
-.getElementById("patientSection")
-.classList
-.remove("hidden");
-
+document.getElementById("patientSection")
+.classList.remove("hidden");
 
 displayPatient();
 
+await loadVisits(patientId);
 
-await loadVisits(
-patientId
-);
-
-
-document
-.getElementById("patientSection")
+document.getElementById("patientSection")
 .scrollIntoView({
 behavior:"smooth"
 });
@@ -1716,2253 +817,1022 @@ behavior:"smooth"
 }
 
 
-
-/* =====================================================
+/* =========================================================
 DISPLAY PATIENT
-===================================================== */
+========================================================= */
 
-function displayPatient() {
+function displayPatient(){
 
-const p =
-currentPatient;
+const p=currentPatient;
 
+document.getElementById("patientDetails").innerHTML=
 
-document
-.getElementById("patientDetails")
-.innerHTML =
+"<p><strong>Patient ID:</strong> "+
+escapeHtml(p.id)+"</p>"+
 
-"<p><strong>Patient ID:</strong> " +
-escapeHtml(p.id) +
-"</p>" +
+"<p><strong>Name:</strong> "+
+escapeHtml(p.name)+"</p>"+
 
-"<p><strong>Name:</strong> " +
-escapeHtml(p.name) +
-"</p>" +
+"<p><strong>Age:</strong> "+
+escapeHtml(p.age??"")+"</p>"+
 
-"<p><strong>Age:</strong> " +
-escapeHtml(p.age ?? "") +
-"</p>" +
+"<p><strong>Gender:</strong> "+
+escapeHtml(p.gender??"")+"</p>"+
 
-"<p><strong>Gender:</strong> " +
-escapeHtml(p.gender ?? "") +
-"</p>" +
+"<p><strong>Mobile:</strong> "+
+escapeHtml(p.mobile??"")+"</p>"+
 
-"<p><strong>Mobile:</strong> " +
-escapeHtml(p.mobile ?? "") +
-"</p>" +
-
-"<p><strong>Address:</strong> " +
-formatText(p.address ?? "") +
+"<p><strong>Address:</strong><br>"+
+formatText(p.address??"")+
 "</p>";
 
 }
 
 
-
-/* =====================================================
+/* =========================================================
 EDIT PATIENT
-===================================================== */
+========================================================= */
 
-document
-.getElementById("editPatientButton")
-.addEventListener(
-"click",
-function() {
+document.getElementById("editPatientButton")
+.addEventListener("click",()=>{
 
-if (!currentPatient) {
+if(!currentPatient)return;
 
-return;
+document.getElementById("editName").value=
+currentPatient.name||"";
 
-}
+document.getElementById("editAge").value=
+currentPatient.age??"";
 
+document.getElementById("editGender").value=
+currentPatient.gender||"";
 
-document
-.getElementById("editName")
-.value =
-currentPatient.name || "";
+document.getElementById("editMobile").value=
+currentPatient.mobile||"";
 
+document.getElementById("editAddress").value=
+currentPatient.address||"";
 
-document
-.getElementById("editAge")
-.value =
-currentPatient.age ?? "";
-
-
-document
-.getElementById("editGender")
-.value =
-currentPatient.gender || "";
-
-
-document
-.getElementById("editMobile")
-.value =
-currentPatient.mobile || "";
-
-
-document
-.getElementById("editAddress")
-.value =
-currentPatient.address || "";
-
-
-document
-.getElementById("patientEditBox")
-.classList
-.remove("hidden");
+document.getElementById("patientEditBox")
+.classList.remove("hidden");
 
 });
 
 
+document.getElementById("cancelPatientEditButton")
+.addEventListener("click",()=>{
 
-/* =====================================================
-CANCEL PATIENT EDIT
-===================================================== */
-
-document
-.getElementById("cancelPatientEditButton")
-.addEventListener(
-"click",
-function() {
-
-document
-.getElementById("patientEditBox")
-.classList
-.add("hidden");
+document.getElementById("patientEditBox")
+.classList.add("hidden");
 
 });
 
 
+document.getElementById("savePatientEditButton")
+.addEventListener("click",async()=>{
 
-/* =====================================================
-SAVE PATIENT EDIT
-===================================================== */
+if(!currentPatient)return;
 
-document
-.getElementById("savePatientEditButton")
-.addEventListener(
-"click",
-async function() {
+const name=
+document.getElementById("editName").value.trim();
 
-if (!currentPatient) {
+if(!name){
 
+alert("Name is required.");
 return;
 
 }
 
-
-const name =
-document
-.getElementById("editName")
-.value
-.trim();
-
-const age =
-document
-.getElementById("editAge")
-.value;
-
-const gender =
-document
-.getElementById("editGender")
-.value;
-
-const mobile =
-document
-.getElementById("editMobile")
-.value
-.trim();
-
-const address =
-document
-.getElementById("editAddress")
-.value
-.trim();
-
-const message =
-document
-.getElementById("editPatientMessage");
-
-
-if (!name) {
-
-message.innerHTML =
-'<div class="message error">' +
-'Name is required.' +
-'</div>';
-
-return;
-
-}
-
-
-const result =
+const {data,error}=
 await supabaseClient
 .from("patients")
 .update({
-
 name:name,
-
-age:
-age
-? parseInt(age)
-: null,
-
-gender:
-gender || null,
-
-mobile:
-mobile || null,
-
-address:
-address || null
-
+age:document.getElementById("editAge").value
+?parseInt(document.getElementById("editAge").value)
+:null,
+gender:document.getElementById("editGender").value||null,
+mobile:document.getElementById("editMobile").value.trim()||null,
+address:document.getElementById("editAddress").value.trim()||null
 })
-.eq(
-"id",
-currentPatient.id
-)
+.eq("id",currentPatient.id)
 .select()
 .single();
 
+if(error){
 
-if (result.error) {
-
-message.innerHTML =
-'<div class="message error">' +
-escapeHtml(
-result.error.message
-) +
+document.getElementById("editPatientMessage").innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
 return;
-
 }
 
-
-currentPatient =
-result.data;
-
+currentPatient=data;
 
 displayPatient();
 
-
-document
-.getElementById("patientEditBox")
-.classList
-.add("hidden");
-
-
-searchPatients();
+document.getElementById("patientEditBox")
+.classList.add("hidden");
 
 });
 
 
-
-/* =====================================================
+/* =========================================================
 LOAD VISITS
-===================================================== */
+========================================================= */
 
-async function loadVisits(
-patientId
-) {
+async function loadVisits(patientId){
 
-const history =
-document
-.getElementById("visitHistory");
+const history=
+document.getElementById("visitHistory");
 
+history.innerHTML="Loading visit history...";
 
-history.innerHTML =
-"Loading history...";
-
-
-const result =
+const {data,error}=
 await supabaseClient
 .from("visits")
 .select("*")
-.eq(
-"patient_id",
-patientId
-)
-.order(
-"visit_date",
-{
-ascending:false
-}
-);
+.eq("patient_id",patientId)
+.order("visit_date",{ascending:false});
 
+if(error){
 
-if (result.error) {
-
-history.innerHTML =
-'<div class="message error">' +
-escapeHtml(
-result.error.message
-) +
+history.innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
 return;
-
 }
 
+currentVisits=data||[];
 
-currentVisits =
-result.data || [];
+history.innerHTML="";
 
+if(currentVisits.length===0){
 
-history.innerHTML = "";
-
-
-if (
-currentVisits.length === 0
-) {
-
-history.innerHTML =
-'<div class="message">' +
-'No previous visits found.' +
-'</div>';
+history.innerHTML=
+'<div class="message">No previous visits found.</div>';
 
 return;
-
 }
 
+currentVisits.forEach(visit=>{
 
-currentVisits.forEach(
-function(visit) {
+const div=document.createElement("div");
 
-const div =
-document.createElement("div");
+div.className="visit";
 
-div.className =
-"visit";
+let html=
+"<strong>Visit Date:</strong> "+
+shortDate(visit.visit_date);
 
+if(visit.complaints){
 
-let html =
-
-"<strong>Visit Date:</strong> " +
-
-escapeHtml(
-formatShortDate(
-visit.visit_date
-)
-);
-
-
-if (visit.complaints) {
-
-html +=
-
-"<p><strong>Complaints:</strong><br>" +
-
-formatText(
-visit.complaints
-) +
-
+html+=
+"<p><strong>Chief Complaints:</strong><br>"+
+formatText(visit.complaints)+
 "</p>";
 
 }
 
+if(visit.diagnosis){
 
-if (visit.diagnosis) {
-
-html +=
-
-"<p><strong>Diagnosis:</strong><br>" +
-
-formatText(
-visit.diagnosis
-) +
-
+html+=
+"<p><strong>Diagnosis:</strong><br>"+
+formatText(visit.diagnosis)+
 "</p>";
 
 }
 
+if(visit.prescription){
 
-if (visit.prescription) {
-
-html +=
-
-"<p><strong>Prescription / Medicines:</strong><br>" +
-
-formatText(
-visit.prescription
-) +
-
+html+=
+"<p><strong>Prescription / Medicines:</strong><br>"+
+formatText(visit.prescription)+
 "</p>";
 
 }
 
+if(visit.advice){
 
-if (visit.advice) {
-
-html +=
-
-"<p><strong>Advice:</strong><br>" +
-
-formatText(
-visit.advice
-) +
-
+html+=
+"<p><strong>Advice:</strong><br>"+
+formatText(visit.advice)+
 "</p>";
 
 }
 
+if(visit.follow_up){
 
-if (visit.follow_up) {
-
-html +=
-
-"<p><strong>Follow-up:</strong> " +
-
-escapeHtml(
-formatShortDate(
-visit.follow_up
-)
-) +
-
+html+=
+"<p><strong>Follow-up Date:</strong> "+
+shortDate(visit.follow_up)+
 "</p>";
 
 }
 
-
-html +=
-
-"<p><strong>Fee Payment:</strong> " +
-
-escapeHtml(
-formatMoney(
-visit.fee_payment
-)
-) +
-
+html+=
+"<p><strong>Fee Payment:</strong> "+
+money(visit.fee_payment)+
 "</p>";
 
+html+=
+'<div class="visit-buttons">'+
+'<button onclick="editVisit(\''+visit.id+'\')">✏️ Edit</button>'+
+'<button class="red" onclick="deleteVisit(\''+visit.id+'\')">🗑️ Delete</button>'+
+'</div>';
 
-html +=
+div.innerHTML=html;
 
-'<div class="visit-actions">' +
-
-'<button type="button" onclick="openEditVisit(' +
-JSON.stringify(visit.id) +
-')">' +
-
-"✏️ Edit" +
-
-"</button>" +
-
-'<button class="danger" type="button" onclick="deleteVisit(' +
-JSON.stringify(visit.id) +
-')">' +
-
-"🗑️ Delete" +
-
-"</button>" +
-
-"</div>";
-
-
-div.innerHTML =
-html;
-
-
-history.appendChild(
-div
-);
+history.appendChild(div);
 
 });
 
 }
 
 
-
-/* =====================================================
+/* =========================================================
 SAVE VISIT
-===================================================== */
+========================================================= */
 
-document
-.getElementById("saveVisitButton")
-.addEventListener(
-"click",
-async function() {
+document.getElementById("saveVisitButton")
+.addEventListener("click",async()=>{
 
-if (!currentPatient) {
+if(!currentPatient){
 
-alert(
-"Please select a patient first."
-);
-
+alert("Please select a patient first.");
 return;
 
 }
 
+const visitDate=
+document.getElementById("visitDate").value;
 
-const visitDate =
-document
-.getElementById("visitDate")
-.value;
+if(!visitDate){
 
-
-const complaints =
-document
-.getElementById("complaints")
-.value
-.trim();
-
-
-const diagnosis =
-document
-.getElementById("diagnosis")
-.value
-.trim();
-
-
-const prescription =
-document
-.getElementById("prescription")
-.value
-.trim();
-
-
-const advice =
-document
-.getElementById("advice")
-.value
-.trim();
-
-
-const followUp =
-document
-.getElementById("followUp")
-.value;
-
-
-const feeRaw =
-document
-.getElementById("feePayment")
-.value;
-
-
-const feePayment =
-feeRaw === ""
-?
-0
-:
-Number(feeRaw);
-
-
-const message =
-document
-.getElementById("visitMessage");
-
-
-if (!visitDate) {
-
-message.innerHTML =
-'<div class="message error">' +
-'Visit date is required.' +
-'</div>';
-
+alert("Visit date is required.");
 return;
 
 }
 
+const fee=
+document.getElementById("feePayment").value;
 
-if (
-feePayment < 0 ||
-Number.isNaN(feePayment)
-) {
-
-message.innerHTML =
-'<div class="message error">' +
-'Enter a valid fee payment.' +
-'</div>';
-
-return;
-
-}
-
-
-const result =
+const {error}=
 await supabaseClient
 .from("visits")
 .insert([{
-
-patient_id:
-currentPatient.id,
-
-visit_date:
-visitDate,
-
-complaints:
-complaints || null,
-
-diagnosis:
-diagnosis || null,
-
-prescription:
-prescription || null,
-
-advice:
-advice || null,
-
-follow_up:
-followUp || null,
-
-fee_payment:
-feePayment
-
+patient_id:currentPatient.id,
+visit_date:visitDate,
+complaints:document.getElementById("complaints").value.trim()||null,
+diagnosis:document.getElementById("diagnosis").value.trim()||null,
+prescription:document.getElementById("prescription").value.trim()||null,
+advice:document.getElementById("advice").value.trim()||null,
+follow_up:document.getElementById("followUp").value||null,
+fee_payment:fee?Number(fee):0
 }]);
 
+if(error){
 
-if (result.error) {
-
-message.innerHTML =
-'<div class="message error">' +
-escapeHtml(
-result.error.message
-) +
+document.getElementById("visitMessage").innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
 return;
-
 }
 
+document.getElementById("visitMessage").innerHTML=
+'<div class="message">Visit saved successfully.</div>';
 
-message.innerHTML =
-'<div class="message">' +
-'Visit saved successfully.' +
-'</div>';
+document.getElementById("complaints").value="";
+document.getElementById("diagnosis").value="";
+document.getElementById("prescription").value="";
+document.getElementById("advice").value="";
+document.getElementById("followUp").value="";
+document.getElementById("feePayment").value="";
 
-
-document
-.getElementById("complaints")
-.value = "";
-
-document
-.getElementById("diagnosis")
-.value = "";
-
-document
-.getElementById("prescription")
-.value = "";
-
-document
-.getElementById("advice")
-.value = "";
-
-document
-.getElementById("followUp")
-.value = "";
-
-document
-.getElementById("feePayment")
-.value = "";
-
-
-await loadVisits(
-currentPatient.id
-);
-
-
+await loadVisits(currentPatient.id);
 await loadTodayReport();
 
 });
 
 
+/* =========================================================
+EDIT VISIT
+========================================================= */
 
-/* =====================================================
-OPEN EDIT VISIT
-===================================================== */
+window.editVisit=function(id){
 
-window.openEditVisit =
-function(visitId) {
+const visit=
+currentVisits.find(v=>String(v.id)===String(id));
 
-const visit =
-currentVisits.find(
-function(v) {
+if(!visit)return;
 
-return String(v.id) ===
-String(visitId);
+document.getElementById("editVisitId").value=visit.id;
+document.getElementById("editVisitDate").value=visit.visit_date||"";
+document.getElementById("editComplaints").value=visit.complaints||"";
+document.getElementById("editDiagnosis").value=visit.diagnosis||"";
+document.getElementById("editPrescription").value=visit.prescription||"";
+document.getElementById("editAdvice").value=visit.advice||"";
+document.getElementById("editFollowUp").value=visit.follow_up||"";
+document.getElementById("editFeePayment").value=visit.fee_payment??"";
 
-}
-);
+document.getElementById("editVisitMessage").innerHTML="";
 
-
-if (!visit) {
-
-return;
-
-}
-
-
-document
-.getElementById("editVisitId")
-.value =
-visit.id;
-
-
-document
-.getElementById("editVisitDate")
-.value =
-visit.visit_date || "";
-
-
-document
-.getElementById("editComplaints")
-.value =
-visit.complaints || "";
-
-
-document
-.getElementById("editDiagnosis")
-.value =
-visit.diagnosis || "";
-
-
-document
-.getElementById("editPrescription")
-.value =
-visit.prescription || "";
-
-
-document
-.getElementById("editAdvice")
-.value =
-visit.advice || "";
-
-
-document
-.getElementById("editFollowUp")
-.value =
-visit.follow_up || "";
-
-
-document
-.getElementById("editFeePayment")
-.value =
-visit.fee_payment ?? "";
-
-
-document
-.getElementById("editVisitMessage")
-.innerHTML = "";
-
-
-document
-.getElementById("visitModal")
-.classList
-.remove("hidden");
+document.getElementById("visitModal")
+.classList.remove("hidden");
 
 };
 
 
-
-/* =====================================================
-CANCEL EDIT VISIT
-===================================================== */
-
-document
-.getElementById("cancelVisitEditButton")
-.addEventListener(
-"click",
-function() {
-
-document
-.getElementById("visitModal")
-.classList
-.add("hidden");
-
-});
-
-
-
-/* =====================================================
+/* =========================================================
 SAVE EDITED VISIT
-===================================================== */
+========================================================= */
 
-document
-.getElementById("saveVisitEditButton")
-.addEventListener(
-"click",
-async function() {
+document.getElementById("saveEditedVisitButton")
+.addEventListener("click",async()=>{
 
-const id =
-document
-.getElementById("editVisitId")
-.value;
+const id=
+document.getElementById("editVisitId").value;
 
-
-const feeRaw =
-document
-.getElementById("editFeePayment")
-.value;
-
-
-const feePayment =
-feeRaw === ""
-?
-0
-:
-Number(feeRaw);
-
-
-const message =
-document
-.getElementById("editVisitMessage");
-
-
-if (
-feePayment < 0 ||
-Number.isNaN(feePayment)
-) {
-
-message.innerHTML =
-'<div class="message error">' +
-'Enter a valid fee payment.' +
-'</div>';
-
-return;
-
-}
-
-
-const result =
+const {error}=
 await supabaseClient
 .from("visits")
 .update({
-
-visit_date:
-document
-.getElementById("editVisitDate")
-.value,
-
-complaints:
-document
-.getElementById("editComplaints")
-.value
-.trim() || null,
-
-diagnosis:
-document
-.getElementById("editDiagnosis")
-.value
-.trim() || null,
-
-prescription:
-document
-.getElementById("editPrescription")
-.value
-.trim() || null,
-
-advice:
-document
-.getElementById("editAdvice")
-.value
-.trim() || null,
-
-follow_up:
-document
-.getElementById("editFollowUp")
-.value || null,
-
-fee_payment:
-feePayment
-
+visit_date:document.getElementById("editVisitDate").value,
+complaints:document.getElementById("editComplaints").value.trim()||null,
+diagnosis:document.getElementById("editDiagnosis").value.trim()||null,
+prescription:document.getElementById("editPrescription").value.trim()||null,
+advice:document.getElementById("editAdvice").value.trim()||null,
+follow_up:document.getElementById("editFollowUp").value||null,
+fee_payment:document.getElementById("editFeePayment").value
+?Number(document.getElementById("editFeePayment").value)
+:0
 })
-.eq(
-"id",
-id
-);
+.eq("id",id);
 
+if(error){
 
-if (result.error) {
-
-message.innerHTML =
-'<div class="message error">' +
-escapeHtml(
-result.error.message
-) +
+document.getElementById("editVisitMessage").innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
 '</div>';
 
 return;
-
 }
 
+document.getElementById("visitModal")
+.classList.add("hidden");
 
-document
-.getElementById("visitModal")
-.classList
-.add("hidden");
-
-
-await loadVisits(
-currentPatient.id
-);
-
-
+await loadVisits(currentPatient.id);
 await loadTodayReport();
 
 });
 
 
+/* =========================================================
+CANCEL EDIT VISIT
+========================================================= */
 
-/* =====================================================
+document.getElementById("cancelVisitEditButton")
+.addEventListener("click",()=>{
+
+document.getElementById("visitModal")
+.classList.add("hidden");
+
+});
+
+
+/* =========================================================
 DELETE VISIT
-===================================================== */
+========================================================= */
 
-window.deleteVisit =
-async function(visitId) {
+window.deleteVisit=async function(id){
 
-const confirmed =
-confirm(
-"Are you sure you want to delete this visit record?\n\nThis action cannot be undone."
-);
+if(!confirm(
+"Are you sure you want to delete this visit?\n\nThis cannot be undone."
+))return;
 
-
-if (!confirmed) {
-
-return;
-
-}
-
-
-const result =
+const {error}=
 await supabaseClient
 .from("visits")
 .delete()
-.eq(
-"id",
-visitId
-);
+.eq("id",id);
 
+if(error){
 
-if (result.error) {
-
-alert(
-"Unable to delete visit:\n" +
-result.error.message
-);
-
+alert(error.message);
 return;
-
 }
 
-
-await loadVisits(
-currentPatient.id
-);
-
-
+await loadVisits(currentPatient.id);
 await loadTodayReport();
 
 };
 
 
+/* =========================================================
+PRINT PATIENT
+========================================================= */
 
-/* =====================================================
-PRINT ALL PATIENT RECORDS
-===================================================== */
+document.getElementById("printPatientButton")
+.addEventListener("click",()=>{
 
-document
-.getElementById("printPatientButton")
-.addEventListener(
-"click",
-printPatientRecord
-);
+if(!currentPatient)return;
 
+let rows="";
 
-function printPatientRecord() {
+currentVisits.forEach(v=>{
 
-if (!currentPatient) {
+rows+=`
+<tr>
+<td>${shortDate(v.visit_date)}</td>
+<td>${formatText(v.complaints||"")}</td>
+<td>${formatText(v.diagnosis||"")}</td>
+<td>${formatText(v.prescription||"")}</td>
+<td>${formatText(v.advice||"")}</td>
+<td>${shortDate(v.follow_up||"")}</td>
+<td>${money(v.fee_payment)}</td>
+</tr>
+`;
 
+});
+
+const html=`
+<!DOCTYPE html>
+<html>
+<head>
+<title>Patient Record</title>
+<style>
+body{font-family:Arial;padding:25px}
+h1{text-align:center;color:#176b4d}
+.patient{line-height:1.8;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{border:1px solid #aaa;padding:5px;vertical-align:top}
+th{background:#eef7f2}
+</style>
+</head>
+<body>
+
+<h1>NEHA HOMOEOPATHIC CLINIC</h1>
+
+<h2>Complete Patient Record</h2>
+
+<div class="patient">
+<strong>Patient ID:</strong> ${escapeHtml(currentPatient.id)}<br>
+<strong>Name:</strong> ${escapeHtml(currentPatient.name)}<br>
+<strong>Age:</strong> ${escapeHtml(currentPatient.age??"")}<br>
+<strong>Gender:</strong> ${escapeHtml(currentPatient.gender??"")}<br>
+<strong>Mobile:</strong> ${escapeHtml(currentPatient.mobile??"")}<br>
+<strong>Address:</strong> ${formatText(currentPatient.address??"")}
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Complaints</th>
+<th>Diagnosis</th>
+<th>Prescription</th>
+<th>Advice</th>
+<th>Follow-up</th>
+<th>Fee</th>
+</tr>
+</thead>
+<tbody>
+${rows||"<tr><td colspan='7'>No visits.</td></tr>"}
+</tbody>
+</table>
+
+<p>Printed on: ${shortDate(getLocalDate())}</p>
+
+<script>
+window.onload=function(){window.print();}
+<\/script>
+
+</body>
+</html>
+`;
+
+const win=window.open("","_blank");
+
+if(!win){
+
+alert("Please allow pop-ups for printing.");
 return;
 
 }
 
-
-const p =
-currentPatient;
-
-
-let rows = "";
-
-
-currentVisits.forEach(
-function(v) {
-
-rows +=
-
-"<tr>" +
-
-"<td>" +
-escapeHtml(
-formatShortDate(
-v.visit_date
-)
-) +
-"</td>" +
-
-"<td>" +
-formatText(
-v.complaints || ""
-) +
-"</td>" +
-
-"<td>" +
-formatText(
-v.diagnosis || ""
-) +
-"</td>" +
-
-"<td>" +
-formatText(
-v.prescription || ""
-) +
-"</td>" +
-
-"<td>" +
-formatText(
-v.advice || ""
-) +
-"</td>" +
-
-"<td>" +
-escapeHtml(
-formatShortDate(
-v.follow_up || ""
-)
-) +
-"</td>" +
-
-"<td>" +
-escapeHtml(
-formatMoney(
-v.fee_payment
-)
-) +
-"</td>" +
-
-"</tr>";
+win.document.write(html);
+win.document.close();
 
 });
 
 
-const content = `
+/* =========================================================
+TODAY PRINT
+========================================================= */
 
+document.getElementById("printTodayButton")
+.addEventListener("click",printToday);
+
+
+async function printToday(){
+
+const today=getLocalDate();
+
+const {data:visits,error}=
+await supabaseClient
+.from("visits")
+.select("*")
+.eq("visit_date",today)
+.order("id");
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+const records=visits||[];
+
+const patientIds=[
+...new Set(records.map(v=>v.patient_id))
+];
+
+let patients=[];
+
+if(patientIds.length){
+
+const result=
+await supabaseClient
+.from("patients")
+.select("*")
+.in("id",patientIds);
+
+if(result.error){
+
+alert(result.error.message);
+return;
+
+}
+
+patients=result.data||[];
+
+}
+
+let total=0;
+let rows="";
+
+records.forEach((v,i)=>{
+
+const p=
+patients.find(x=>String(x.id)===String(v.patient_id));
+
+total+=Number(v.fee_payment||0);
+
+rows+=`
+<tr>
+<td>${i+1}</td>
+<td>${escapeHtml(p?.name||"")}</td>
+<td>${escapeHtml(p?.age??"")}</td>
+<td>${escapeHtml(p?.gender||"")}</td>
+<td>${escapeHtml(p?.mobile||"")}</td>
+<td>${money(v.fee_payment)}</td>
+</tr>
+`;
+
+});
+
+const html=`
+<!DOCTYPE html>
 <html>
-
 <head>
-
-<title>
-Patient Record
-</title>
-
+<title>Today's Report</title>
 <style>
-
-body {
-font-family: Arial;
-padding: 25px;
-}
-
-h1 {
-text-align:center;
-color:#176b4d;
-}
-
-.clinic {
-text-align:center;
-margin-bottom:20px;
-}
-
-.info {
-line-height:1.7;
-}
-
-table {
-width:100%;
-border-collapse:collapse;
-font-size:10px;
-}
-
-th,
-td {
-border:1px solid #aaa;
-padding:5px;
-vertical-align:top;
-}
-
-th {
-background:#eef7f2;
-}
-
+body{font-family:Arial;padding:25px}
+h1,h2{text-align:center;color:#176b4d}
+.summary{text-align:center;font-size:18px;margin:20px}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #aaa;padding:7px}
+th{background:#eef7f2}
 </style>
-
 </head>
-
 <body>
 
-<div class="clinic">
+<h1>NEHA HOMOEOPATHIC CLINIC</h1>
 
-<h1>
-NEHA HOMOEOPATHIC CLINIC
-</h1>
+<h2>Today's Patient & Payment Report</h2>
 
-<div>
-Patient Medical Record
-</div>
-
-</div>
-
-
-<div class="info">
-
-<strong>
-Patient ID:
-</strong>
-
-${escapeHtml(p.id)}
-
-<br>
-
-<strong>
-Name:
-</strong>
-
-${escapeHtml(p.name)}
-
-<br>
-
-<strong>
-Age:
-</strong>
-
-${escapeHtml(p.age ?? "")}
-
-<br>
-
-<strong>
-Gender:
-</strong>
-
-${escapeHtml(p.gender ?? "")}
-
-<br>
-
-<strong>
-Mobile:
-</strong>
-
-${escapeHtml(p.mobile ?? "")}
-
-<br>
-
-<strong>
-Address:
-</strong>
-
-${formatText(p.address ?? "")}
-
-</div>
-
-
-<h2>
-Complete Visit History
-</h2>
-
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Date</th>
-
-<th>Complaints</th>
-
-<th>Diagnosis</th>
-
-<th>Prescription</th>
-
-<th>Advice</th>
-
-<th>Follow-up</th>
-
-<th>Fee</th>
-
-</tr>
-
-</thead>
-
-
-<tbody>
-
-${
-rows ||
-'<tr><td colspan="7">No visits found.</td></tr>'
-}
-
-</tbody>
-
-</table>
-
-
-<p>
-
-Printed on
-${escapeHtml(
-formatShortDate(
-localDateISO()
-)
-)}
-
+<p style="text-align:center">
+<strong>${shortDate(today)}</strong>
 </p>
 
-
-<script>
-
-window.onload =
-function() {
-
-window.print();
-
-}
-
-<\/script>
-
-
-</body>
-
-</html>
-`;
-
-
-const windowPrint =
-window.open(
-"",
-"_blank"
-);
-
-
-if (!windowPrint) {
-
-alert(
-"Please allow pop-ups for printing."
-);
-
-return;
-
-}
-
-
-windowPrint.document.write(
-content
-);
-
-windowPrint.document.close();
-
-}
-
-
-
-/* =====================================================
-PRINT TODAY REPORT
-===================================================== */
-
-async function printTodayReport() {
-
-const today =
-localDateISO();
-
-
-const result =
-await supabaseClient
-.from("visits")
-.select(
-"*, patients(name,age,gender,mobile)"
-)
-.eq(
-"visit_date",
-today
-)
-.order(
-"id",
-{
-ascending:true
-}
-);
-
-
-if (result.error) {
-
-alert(
-"Unable to load today's report:\n" +
-result.error.message
-);
-
-return;
-
-}
-
-
-const rows =
-result.data || [];
-
-
-const total =
-rows.reduce(
-function(sum,v) {
-
-return sum +
-Number(
-v.fee_payment || 0
-);
-
-},
-0
-);
-
-
-let body = "";
-
-
-rows.forEach(
-function(v,index) {
-
-body +=
-
-"<tr>" +
-
-"<td>" +
-(index + 1) +
-"</td>" +
-
-"<td>" +
-escapeHtml(
-v.patients?.name || ""
-) +
-"</td>" +
-
-"<td>" +
-escapeHtml(
-v.patients?.age ?? ""
-) +
-"</td>" +
-
-"<td>" +
-escapeHtml(
-v.patients?.gender ?? ""
-) +
-"</td>" +
-
-"<td>" +
-escapeHtml(
-v.patients?.mobile ?? ""
-) +
-"</td>" +
-
-"<td>" +
-escapeHtml(
-formatMoney(
-v.fee_payment
-)
-) +
-"</td>" +
-
-"</tr>";
-
-});
-
-
-const content = `
-
-<html>
-
-<head>
-
-<title>
-Today's Report
-</title>
-
-<style>
-
-body {
-font-family:Arial;
-padding:25px;
-}
-
-h1,
-h2 {
-text-align:center;
-color:#176b4d;
-}
-
-.summary {
-text-align:center;
-font-size:18px;
-margin:20px;
-}
-
-table {
-width:100%;
-border-collapse:collapse;
-}
-
-th,
-td {
-border:1px solid #aaa;
-padding:7px;
-}
-
-th {
-background:#eef7f2;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h1>
-NEHA HOMOEOPATHIC CLINIC
-</h1>
-
-<h2>
-Today's Patient & Payment Report
-</h2>
-
-<div style="text-align:center">
-
-<strong>
-${escapeHtml(
-formatShortDate(today)
-)}
-</strong>
-
-</div>
-
-
 <div class="summary">
-
-<strong>
-Total Patients:
-</strong>
-
-${rows.length}
-
-
+<strong>Total Patients:</strong> ${records.length}
 &nbsp;&nbsp;&nbsp;
-
-
-<strong>
-Total Payment:
-</strong>
-
-${escapeHtml(
-formatMoney(total)
-)}
-
+<strong>Total Payment:</strong> ${money(total)}
 </div>
-
 
 <table>
-
 <thead>
-
 <tr>
-
 <th>#</th>
-
 <th>Patient Name</th>
-
 <th>Age</th>
-
 <th>Gender</th>
-
 <th>Mobile</th>
-
 <th>Fee</th>
-
 </tr>
-
 </thead>
-
-
 <tbody>
-
-${
-body ||
-'<tr><td colspan="6">No patients today.</td></tr>'
-}
-
+${rows||"<tr><td colspan='6'>No patients today.</td></tr>"}
 </tbody>
-
 </table>
 
-
 <script>
-
-window.onload =
-function() {
-
-window.print();
-
-}
-
+window.onload=function(){window.print();}
 <\/script>
 
 </body>
-
 </html>
 `;
 
+const win=window.open("","_blank");
 
-const printWindow =
-window.open(
-"",
-"_blank"
-);
+if(!win){
 
-
-if (!printWindow) {
-
-alert(
-"Please allow pop-ups for printing."
-);
-
+alert("Please allow pop-ups for printing.");
 return;
 
 }
 
-
-printWindow.document.write(
-content
-);
-
-printWindow.document.close();
+win.document.write(html);
+win.document.close();
 
 }
 
 
+/* =========================================================
+BACKUP SETUP
+========================================================= */
 
-/* =====================================================
-MONTHLY EXPORT SELECTORS
-===================================================== */
+function setupBackup(){
 
-function setupExportSelectors() {
+const month=document.getElementById("backupMonth");
+const year=document.getElementById("backupYear");
 
-const monthSelect =
-document
-.getElementById(
-"exportMonth"
-);
-
-
-const yearSelect =
-document
-.getElementById(
-"exportYear"
-);
-
-
-if (
-monthSelect.options.length === 0
-) {
-
-const months = [
-
-"January",
-"February",
-"March",
-"April",
-"May",
-"June",
-"July",
-"August",
-"September",
-"October",
-"November",
-"December"
-
+const months=[
+"January","February","March","April","May","June",
+"July","August","September","October","November","December"
 ];
 
+month.innerHTML="";
 
-months.forEach(
-function(name,index) {
+months.forEach((name,index)=>{
 
-const option =
-document.createElement(
-"option"
-);
+const option=document.createElement("option");
 
-option.value =
-index + 1;
+option.value=index+1;
+option.textContent=name;
 
-option.textContent =
-name;
-
-monthSelect.appendChild(
-option
-);
+month.appendChild(option);
 
 });
 
-}
+const currentYear=new Date().getFullYear();
 
+year.innerHTML="";
 
-if (
-yearSelect.options.length === 0
-) {
+for(let y=currentYear;y>=currentYear-10;y--){
 
-const currentYear =
-new Date()
-.getFullYear();
+const option=document.createElement("option");
 
+option.value=y;
+option.textContent=y;
 
-for (
-let year =
-currentYear;
-
-year >=
-currentYear - 10;
-
-year--
-) {
-
-const option =
-document.createElement(
-"option"
-);
-
-option.value =
-year;
-
-option.textContent =
-year;
-
-yearSelect.appendChild(
-option
-);
+year.appendChild(option);
 
 }
+
+month.value=new Date().getMonth()+1;
+year.value=currentYear;
 
 }
 
 
-monthSelect.value =
-new Date().getMonth() + 1;
-
-
-yearSelect.value =
-new Date().getFullYear();
-
-}
-
-
-
-/* =====================================================
+/* =========================================================
 GET MONTHLY DATA
-===================================================== */
+========================================================= */
 
-async function getMonthlyData() {
+async function getMonthlyData(){
 
-const month =
-Number(
-document
-.getElementById(
-"exportMonth"
-)
-.value
-);
+const month=
+parseInt(document.getElementById("backupMonth").value);
 
+const year=
+parseInt(document.getElementById("backupYear").value);
 
-const year =
-Number(
-document
-.getElementById(
-"exportYear"
-)
-.value
-);
+const start=
+`${year}-${String(month).padStart(2,"0")}-01`;
 
+const lastDay=
+new Date(year,month,0).getDate();
 
-const start =
+const end=
+`${year}-${String(month).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`;
 
-year +
-"-" +
-String(month)
-.padStart(2,"0") +
-"-01";
-
-
-const lastDay =
-new Date(
-year,
-month,
-0
-)
-.getDate();
-
-
-const end =
-
-year +
-"-" +
-String(month)
-.padStart(2,"0") +
-"-" +
-String(lastDay)
-.padStart(2,"0");
-
-
-const result =
+const visitResult=
 await supabaseClient
 .from("visits")
-.select(
-"*, patients(id,name,age,gender,mobile,address)"
-)
-.gte(
-"visit_date",
-start
-)
-.lte(
-"visit_date",
-end
-)
-.order(
-"visit_date",
-{
-ascending:true
-}
-);
+.select("*")
+.gte("visit_date",start)
+.lte("visit_date",end)
+.order("visit_date",{ascending:true});
 
+if(visitResult.error){
 
-if (result.error) {
-
-throw result.error;
+throw visitResult.error;
 
 }
 
+const visits=visitResult.data||[];
 
-return {
-
-month,
-year,
-rows:
-result.data || []
-
-};
-
-}
-
-
-
-/* =====================================================
-MONTHLY PDF EXPORT
-===================================================== */
-
-document
-.getElementById("exportPdfButton")
-.addEventListener(
-"click",
-async function() {
-
-const message =
-document
-.getElementById(
-"exportMessage"
-);
-
-
-message.innerHTML =
-"Preparing PDF...";
-
-
-try {
-
-const data =
-await getMonthlyData();
-
-
-const {
-jsPDF
-} =
-window.jspdf;
-
-
-const doc =
-new jsPDF(
-"l",
-"mm",
-"a4"
-);
-
-
-const monthName =
-document
-.getElementById(
-"exportMonth"
-)
-.selectedOptions[0]
-.textContent;
-
-
-const total =
-data.rows.reduce(
-function(sum,v) {
-
-return sum +
-Number(
-v.fee_payment || 0
-);
-
-},
-0
-);
-
-
-doc.setFontSize(18);
-
-doc.setTextColor(
-23,
-107,
-77
-);
-
-
-doc.text(
-"NEHA HOMOEOPATHIC CLINIC",
-148,
-14,
-{
-align:"center"
-}
-);
-
-
-doc.setFontSize(13);
-
-doc.setTextColor(
-0,
-0,
-0
-);
-
-
-doc.text(
-"Monthly Patient Backup - " +
-monthName +
-" " +
-data.year,
-148,
-22,
-{
-align:"center"
-}
-);
-
-
-doc.setFontSize(10);
-
-
-doc.text(
-
-"Total Visits: " +
-data.rows.length +
-"    Total Payment: " +
-formatMoney(total),
-
-8,
-30
-
-);
-
-
-doc.autoTable({
-
-startY:35,
-
-head:[[
-
-"#",
-"Date",
-"Patient ID",
-"Name",
-"Age",
-"Gender",
-"Mobile",
-"Complaints",
-"Diagnosis",
-"Prescription",
-"Advice",
-"Follow-up",
-"Fee"
-
-]],
-
-
-body:
-
-data.rows.map(
-function(v,index) {
-
-return [
-
-index + 1,
-
-formatShortDate(
-v.visit_date
-),
-
-v.patients?.id ?? "",
-
-v.patients?.name ?? "",
-
-v.patients?.age ?? "",
-
-v.patients?.gender ?? "",
-
-v.patients?.mobile ?? "",
-
-v.complaints ?? "",
-
-v.diagnosis ?? "",
-
-v.prescription ?? "",
-
-v.advice ?? "",
-
-formatShortDate(
-v.follow_up
-),
-
-formatMoney(
-v.fee_payment
-)
-
+const ids=[
+...new Set(visits.map(v=>v.patient_id))
 ];
 
-}),
+let patients=[];
 
+if(ids.length){
 
-styles: {
+const patientResult=
+await supabaseClient
+.from("patients")
+.select("*")
+.in("id",ids);
 
-fontSize:6,
+if(patientResult.error){
 
-cellPadding:1.5,
-
-overflow:"linebreak",
-
-valign:"top"
-
-},
-
-
-headStyles: {
-
-fillColor:[
-23,
-107,
-77
-],
-
-textColor:255
-
-},
-
-
-margin: {
-
-left:8,
-
-right:8
+throw patientResult.error;
 
 }
 
-});
-
-
-doc.save(
-
-"NEHA_CLINIC_" +
-
-data.year +
-
-"_" +
-
-String(data.month)
-.padStart(2,"0") +
-
-"_BACKUP.pdf"
-
-);
-
-
-message.innerHTML =
-'<div class="message">' +
-"Monthly PDF downloaded successfully." +
-"</div>";
+patients=patientResult.data||[];
 
 }
 
-catch(error) {
-
-message.innerHTML =
-'<div class="message error">' +
-"PDF export failed: " +
-escapeHtml(
-error.message
-) +
-"</div>";
+return {month,year,visits,patients};
 
 }
 
-});
 
+/* =========================================================
+TEXT BACKUP
+========================================================= */
 
+document.getElementById("monthlyTextButton")
+.addEventListener("click",async()=>{
 
-/* =====================================================
-MONTHLY TEXT EXPORT
-===================================================== */
+const message=
+document.getElementById("backupMessage");
 
-document
-.getElementById("exportTextButton")
-.addEventListener(
-"click",
-async function() {
+message.innerHTML=
+'<div class="message">Preparing backup...</div>';
 
-const message =
-document
-.getElementById(
-"exportMessage"
+try{
+
+const data=await getMonthlyData();
+
+let total=0;
+
+let text=
+"==================================================\n"+
+"NEHA HOMOEOPATHIC CLINIC\n"+
+"MONTHLY PATIENT BACKUP\n"+
+"==================================================\n\n";
+
+data.visits.forEach((v,i)=>{
+
+const p=
+data.patients.find(
+x=>String(x.id)===String(v.patient_id)
 );
 
+total+=Number(v.fee_payment||0);
 
-message.innerHTML =
-"Preparing text backup...";
-
-
-try {
-
-const data =
-await getMonthlyData();
-
-
-const monthName =
-document
-.getElementById(
-"exportMonth"
-)
-.selectedOptions[0]
-.textContent;
-
-
-let text =
-
-"============================================================\n" +
-
-"              NEHA HOMOEOPATHIC CLINIC\n" +
-
-"              MONTHLY BACKUP - " +
-
-monthName.toUpperCase() +
-
-" " +
-
-data.year +
-
-"\n" +
-
-"============================================================\n\n";
-
-
-let total = 0;
-
-
-data.rows.forEach(
-function(v,index) {
-
-total +=
-Number(
-v.fee_payment || 0
-);
-
-
-const p =
-v.patients || {};
-
-
-text +=
-
-"RECORD " +
-(index + 1) +
-"\n" +
-
-"Patient ID       : " +
-(p.id ?? "") +
-"\n" +
-
-"Patient Name     : " +
-(p.name ?? "") +
-"\n" +
-
-"Age              : " +
-(p.age ?? "") +
-"\n" +
-
-"Gender           : " +
-(p.gender ?? "") +
-"\n" +
-
-"Mobile           : " +
-(p.mobile ?? "") +
-"\n" +
-
-"Address          : " +
-(p.address ?? "") +
-"\n" +
-
-"Visit Date       : " +
-formatShortDate(
-v.visit_date
-) +
-"\n" +
-
-"Chief Complaints : " +
-(v.complaints ?? "") +
-"\n" +
-
-"Diagnosis        : " +
-(v.diagnosis ?? "") +
-"\n" +
-
-"Prescription     : " +
-(v.prescription ?? "") +
-"\n" +
-
-"Advice           : " +
-(v.advice ?? "") +
-"\n" +
-
-"Follow-up Date   : " +
-formatShortDate(
-v.follow_up
-) +
-"\n" +
-
-"Fee Payment      : " +
-formatMoney(
-v.fee_payment
-) +
-"\n" +
-
-"------------------------------------------------------------\n";
+text+=
+"RECORD "+(i+1)+"\n"+
+"--------------------------------------------------\n"+
+"Patient ID       : "+(p?.id||"")+"\n"+
+"Name             : "+(p?.name||"")+"\n"+
+"Age              : "+(p?.age??"")+"\n"+
+"Gender           : "+(p?.gender||"")+"\n"+
+"Mobile           : "+(p?.mobile||"")+"\n"+
+"Address          : "+(p?.address||"")+"\n"+
+"Visit Date       : "+shortDate(v.visit_date)+"\n"+
+"Chief Complaints : "+(v.complaints||"")+"\n"+
+"Diagnosis        : "+(v.diagnosis||"")+"\n"+
+"Prescription     : "+(v.prescription||"")+"\n"+
+"Advice           : "+(v.advice||"")+"\n"+
+"Follow-up        : "+shortDate(v.follow_up)+"\n"+
+"Fee Payment      : "+money(v.fee_payment)+"\n\n";
 
 });
 
+text+=
+"==================================================\n"+
+"TOTAL VISITS     : "+data.visits.length+"\n"+
+"TOTAL PAYMENT    : "+money(total)+"\n"+
+"BACKUP DATE      : "+shortDate(getLocalDate())+"\n"+
+"==================================================";
 
-text +=
-
-"\nTOTAL VISITS     : " +
-
-data.rows.length +
-
-"\n" +
-
-"TOTAL PAYMENT    : " +
-
-formatMoney(total) +
-
-"\n" +
-
-"BACKUP GENERATED : " +
-
-formatShortDate(
-localDateISO()
-) +
-
-"\n";
-
-
-const blob =
-new Blob(
+const blob=new Blob(
 [text],
-{
-type:
-"text/plain;charset=utf-8"
-}
+{type:"text/plain;charset=utf-8"}
 );
 
+const url=URL.createObjectURL(blob);
 
-const url =
-URL.createObjectURL(
-blob
-);
+const a=document.createElement("a");
 
+a.href=url;
 
-const a =
-document.createElement("a");
-
-
-a.href =
-url;
-
-
-a.download =
-
-"NEHA_CLINIC_" +
-
-data.year +
-
-"_" +
-
-String(data.month)
-.padStart(2,"0") +
-
+a.download=
+"NEHA_CLINIC_"+
+data.year+"_"+String(data.month).padStart(2,"0")+
 "_BACKUP.txt";
-
 
 document.body.appendChild(a);
 
-
 a.click();
-
 
 a.remove();
 
+URL.revokeObjectURL(url);
 
-URL.revokeObjectURL(
-url
-);
+message.innerHTML=
+'<div class="message">Text backup downloaded successfully.</div>';
 
+}catch(error){
 
-message.innerHTML =
-'<div class="message">' +
-"Monthly text backup downloaded successfully." +
-"</div>";
-
-}
-
-catch(error) {
-
-message.innerHTML =
-'<div class="message error">' +
-"Text export failed: " +
-escapeHtml(
-error.message
-) +
-"</div>";
+message.innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
+'</div>';
 
 }
 
 });
 
 
+/* =========================================================
+MONTHLY PDF / PRINT
+========================================================= */
 
-/* =====================================================
+document.getElementById("monthlyPdfButton")
+.addEventListener("click",async()=>{
+
+const message=
+document.getElementById("backupMessage");
+
+message.innerHTML=
+'<div class="message">Preparing monthly report...</div>';
+
+try{
+
+const data=await getMonthlyData();
+
+let total=0;
+let rows="";
+
+data.visits.forEach((v,i)=>{
+
+const p=
+data.patients.find(
+x=>String(x.id)===String(v.patient_id)
+);
+
+total+=Number(v.fee_payment||0);
+
+rows+=`
+<tr>
+<td>${i+1}</td>
+<td>${shortDate(v.visit_date)}</td>
+<td>${escapeHtml(p?.id||"")}</td>
+<td>${escapeHtml(p?.name||"")}</td>
+<td>${escapeHtml(p?.age??"")}</td>
+<td>${escapeHtml(p?.gender||"")}</td>
+<td>${escapeHtml(p?.mobile||"")}</td>
+<td>${formatText(v.complaints||"")}</td>
+<td>${formatText(v.diagnosis||"")}</td>
+<td>${formatText(v.prescription||"")}</td>
+<td>${money(v.fee_payment)}</td>
+</tr>
+`;
+
+});
+
+const monthName=
+document.getElementById("backupMonth")
+.selectedOptions[0].textContent;
+
+const html=`
+<!DOCTYPE html>
+<html>
+<head>
+<title>Monthly Backup</title>
+<style>
+body{font-family:Arial;padding:15px}
+h1{text-align:center;color:#176b4d;font-size:22px}
+h2{text-align:center;font-size:16px}
+.summary{text-align:center;margin:15px}
+table{width:100%;border-collapse:collapse;font-size:8px}
+th,td{border:1px solid #999;padding:4px;vertical-align:top}
+th{background:#176b4d;color:#fff}
+</style>
+</head>
+<body>
+
+<h1>NEHA HOMOEOPATHIC CLINIC</h1>
+
+<h2>Monthly Patient Backup - ${monthName} ${data.year}</h2>
+
+<div class="summary">
+<strong>Total Visits:</strong> ${data.visits.length}
+&nbsp;&nbsp;&nbsp;
+<strong>Total Payment:</strong> ${money(total)}
+</div>
+
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Date</th>
+<th>ID</th>
+<th>Name</th>
+<th>Age</th>
+<th>Gender</th>
+<th>Mobile</th>
+<th>Complaints</th>
+<th>Diagnosis</th>
+<th>Prescription</th>
+<th>Fee</th>
+</tr>
+</thead>
+
+<tbody>
+${rows||"<tr><td colspan='11'>No records found.</td></tr>"}
+</tbody>
+</table>
+
+<p>Backup generated: ${shortDate(getLocalDate())}</p>
+
+<script>
+window.onload=function(){window.print();}
+<\/script>
+
+</body>
+</html>
+`;
+
+const win=window.open("","_blank");
+
+if(!win){
+
+alert(
+"Please allow pop-ups. Then choose Save as PDF in the print window."
+);
+
+return;
+}
+
+win.document.write(html);
+win.document.close();
+
+message.innerHTML=
+'<div class="message">Monthly report opened. Choose "Save as PDF" to create the PDF backup.</div>';
+
+}catch(error){
+
+message.innerHTML=
+'<div class="message error">'+
+escapeHtml(error.message)+
+'</div>';
+
+}
+
+});
+
+
+/* =========================================================
 START
-===================================================== */
+========================================================= */
 
 checkLogin();
 
