@@ -1,6 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NEHA HOMOEOPATHIC CLINIC</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7f6;
+  color: #222;
+}
+
+header {
+  background: #176b4d;
+  color: white;
+  padding: 18px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+header p {
+  margin: 5px 0 0;
+}
+
+.container {
+  max-width: 1150px;
+  margin: auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  padding: 18px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+h2 {
+  color: #176b4d;
+}
+
+h3 {
+  color: #176b4d;
+}
+
+input,
+textarea,
+select,
+button {
+  width: 100%;
+  padding: 11px;
+  margin-top: 7px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 15px;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+button {
+  background: #176b4d;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  opacity: .9;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.secondary {
+  background: #555;
+}
+
+.red {
+  background: #b42318 !important;
+}
+
+.orange {
+  background: #d97706 !important;
+}
+
+.blue {
+  background: #2563eb !important;
+}
+
+.edit {
+  background: #176b4d;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.three-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar button {
+  width: auto;
+  margin: 0;
+}
+
+.dashboard-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dashboard-box {
+  background: #eef7f2;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+}
+
+.dashboard-box .number {
+  font-size: 28px;
+  font-weight: bold;
+  color: #176b4d;
+}
+
+.dashboard-box .label {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.patient-result {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  background: #fafafa;
+}
+
+.patient-result:hover {
+  background: #eef7f2;
+}
+
+.visit {
+  border-left: 4px solid #176b4d;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: #f8faf9;
+  border-radius: 7px;
+}
+
+.visit-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.visit-buttons button {
+  width: auto;
+  margin: 0;
+  padding: 9px 14px;
+}
+
+.message {
+  padding: 10px;
+  border-radius: 7px;
+  margin-bottom: 12px;
+  background: #eef7f2;
+}
+
+.error {
+  background: #ffe9e7;
+  color: #9b1c1c;
+}
+
+.edit-box {
+  background: #f1f7f4;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.backup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.55);
+  z-index: 9999;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-box {
+  max-width: 800px;
+  margin: 30px auto;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.small-note {
+  color: #666;
+  font-size: 13px;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #ddd;
+  margin: 25px 0;
+}
+
+@media(max-width:700px) {
+
+  .grid,
+  .three-grid,
+  .dashboard-buttons,
+  .backup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  header h1 {
+    font-size: 20px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar button {
+    width: 100%;
+  }
+
+  .visit-buttons {
+    flex-direction: column;
+  }
+
+  .visit-buttons button {
+    width: 100%;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>NEHA HOMOEOPATHIC CLINIC</h1>
+  <p>Patient Management System</p>
+</header>
+
+<div class="container">
+
+<!-- =====================================================
+LOGIN
+===================================================== -->
+
+<div id="loginSection" class="card">
+
+  <h2>Clinic Login</h2>
+
+  <input
+    id="loginEmail"
+    type="email"
+    placeholder="Email address"
+  >
+
+  <input
+    id="loginPassword"
+    type="password"
+    placeholder="Password"
+  >
+
+  <button id="loginButton" type="button">
+    Login
+  </button>
+
+  <div id="loginMessage"></div>
+
+</div>
+
+
+<!-- =====================================================
+APPLICATION
+===================================================== -->
+
+<div id="appSection" class="hidden">
+
+<!-- DASHBOARD -->
+
+<div class="card">
+
+  <div class="topbar">
+
+    <strong>Clinic Dashboard</strong>
+
+    <button
+      id="logoutButton"
+      class="secondary"
+      type="button"
+    >
+      Logout
+    </button>
+
+  </div>
+
+  <div class="dashboard-buttons">
+
+    <div class="dashboard-box">
+
+      <div
+        id="todayPatients"
+        class="number"
+      >
+        0
+      </div>
+
+      <div class="label">
+        Today's Patients
+      </div>
+
+    </div>
+
+    <div class="dashboard-box">
+
+      <div
+        id="todayPayment"
+        class="number"
+      >
+        ₹0
+      </div>
+
+      <div class="label">
+        Today's Total Payment
+      </div>
+
+    </div>
+
+    <div>
+
+      <button
+        id="printTodayButton"
+        class="blue"
+        type="button"
+      >
+        🖨️ Print Today Report
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+ADD PATIENT
+===================================================== -->
+
+<div class="card">
+
+  <h2>Add New Patient</h2>
+
+  <div class="grid">
+
+    <div>
+
+      <label>Name *</label>
+
+      <input
+        id="patientName"
+        type="text"
+        placeholder="Patient name"
+      >
+
+    </div>
+
+    <div>
+
+      <label>Age</label>
+
+      <input
+        id="patientAge"
+        type="number"
+        placeholder="Age"
+      >
+
+    </div>
+
+    <div>
+
+      <label>Gender</label>
+
+      <select id="patientGender">
+
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+
+      </select>
+
+    </div>
+
+    <div>
+
+      <label>Mobile</label>
+
+      <input
+        id="patientMobile"
+        type="tel"
+        placeholder="Mobile number"
+      >
+
+    </div>
+
+  </div>
+
+  <label>Address</label>
+
+  <textarea
+    id="patientAddress"
+    placeholder="Address"
+  ></textarea>
+
+  <button
+    id="savePatientButton"
+    type="button"
+  >
+    Save Patient
+  </button>
+
+  <div id="patientMessage"></div>
+
+</div>
+
+
+<!-- =====================================================
+SEARCH
+===================================================== -->
+
+<div class="card">
+
+  <h2>Search Patient</h2>
+
+  <input
+    id="searchBox"
+    type="text"
+    placeholder="Search by name or mobile"
+  >
+
+  <div id="searchResults"></div>
+
+</div>
+
+
+<!-- =====================================================
+PATIENT PROFILE
+===================================================== -->
+
+<div
+  id="patientSection"
+  class="card hidden"
+>
+
+  <h2>Patient Profile</h2>
+
+  <div id="patientDetails"></div>
+
+  <div class="grid">
+
+    <button
+      id="editPatientButton"
+      class="edit"
+      type="button"
+    >
+      ✏️ Edit Patient
+    </button>
+
+    <button
+      id="printPatientButton"
+      class="blue"
+      type="button"
+    >
+      🖨️ Print Complete Patient Record
+    </button>
+
+  </div>
+
+
+  <!-- PATIENT EDIT -->
+
+  <div
+    id="patientEditBox"
+    class="edit-box hidden"
+  >
+
+    <h3>Edit Patient</h3>
+
+    <label>Name</label>
+
+    <input id="editName">
+
+    <label>Age</label>
+
+    <input
+      id="editAge"
+      type="number"
+    >
+
+    <label>Gender</label>
+
+    <select id="editGender">
+
+      <option value="">Select</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+
+    </select>
+
+    <label>Mobile</label>
+
+    <input id="editMobile">
+
+    <label>Address</label>
+
+    <textarea id="editAddress"></textarea>
+
+    <button
+      id="savePatientEditButton"
+      type="button"
+    >
+      Save Changes
+    </button>
+
+    <button
+      id="cancelPatientEditButton"
+      class="secondary"
+      type="button"
+    >
+      Cancel
+    </button>
+
+    <div id="editPatientMessage"></div>
+
+  </div>
+
+
+  <hr>
+
+
+  <!-- VISIT HISTORY -->
+
+  <h2>Visit History</h2>
+
+  <div id="visitHistory"></div>
+
+
+  <hr>
+
+
+  <!-- ADD VISIT -->
+
+  <h2>Add New Visit</h2>
+
+  <label>Visit Date</label>
+
+  <input
+    id="visitDate"
+    type="date"
+  >
+
+  <label>Chief Complaints</label>
+
+  <textarea
+    id="complaints"
+    placeholder="Chief complaints"
+  ></textarea>
+
+  <label>Diagnosis</label>
+
+  <textarea
+    id="diagnosis"
+    placeholder="Diagnosis"
+  ></textarea>
+
+  <label>Prescription / Medicines</label>
+
+  <textarea
+    id="prescription"
+    placeholder="Prescription / Medicines"
+  ></textarea>
+
+  <label>Advice</label>
+
+  <textarea
+    id="advice"
+    placeholder="Advice"
+  ></textarea>
+
+  <label>Follow-up Date</label>
+
+  <input
+    id="followUp"
+    type="date"
+  >
+
+  <label>Fee Payment</label>
+
+  <input
+    id="feePayment"
+    type="number"
+    min="0"
+    step="1"
+    placeholder="Enter fee amount"
+  >
+
+  <button
+    id="saveVisitButton"
+    type="button"
+  >
+    Save Visit
+  </button>
+
+  <div id="visitMessage"></div>
+
+</div>
+
+
+<!-- =====================================================
+MONTHLY BACKUP
+===================================================== -->
+
+<div class="card">
+
+  <h2>Monthly Backup</h2>
+
+  <p class="small-note">
+    Select month and year to download a text backup or
+    create a PDF using the browser's Save as PDF option.
+  </p>
+
+  <div class="backup-grid">
+
+    <div>
+
+      <label>Month</label>
+
+      <select id="backupMonth"></select>
+
+    </div>
+
+    <div>
+
+      <label>Year</label>
+
+      <select id="backupYear"></select>
+
+    </div>
+
+    <div>
+
+      <label>&nbsp;</label>
+
+      <button
+        id="monthlyTextButton"
+        type="button"
+      >
+        📄 Download TXT Backup
+      </button>
+
+    </div>
+
+  </div>
+
+  <button
+    id="monthlyPdfButton"
+    class="blue"
+    type="button"
+  >
+    📑 Monthly PDF / Print Backup
+  </button>
+
+  <div id="backupMessage"></div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+EDIT VISIT MODAL
+===================================================== -->
+
+<div
+  id="visitModal"
+  class="modal hidden"
+>
+
+  <div class="modal-box">
+
+    <h2>Edit Visit</h2>
+
+    <input
+      id="editVisitId"
+      type="hidden"
+    >
+
+    <label>Visit Date</label>
+
+    <input
+      id="editVisitDate"
+      type="date"
+    >
+
+    <label>Chief Complaints</label>
+
+    <textarea id="editComplaints"></textarea>
+
+    <label>Diagnosis</label>
+
+    <textarea id="editDiagnosis"></textarea>
+
+    <label>Prescription / Medicines</label>
+
+    <textarea id="editPrescription"></textarea>
+
+    <label>Advice</label>
+
+    <textarea id="editAdvice"></textarea>
+
+    <label>Follow-up Date</label>
+
+    <input
+      id="editFollowUp"
+      type="date"
+    >
+
+    <label>Fee Payment</label>
+
+    <input
+      id="editFeePayment"
+      type="number"
+      min="0"
+      step="1"
+    >
+
+    <button
+      id="saveEditedVisitButton"
+      type="button"
+    >
+      Save Visit Changes
+    </button>
+
+    <button
+      id="cancelVisitEditButton"
+      class="secondary"
+      type="button"
+    >
+      Cancel
+    </button>
+
+    <div id="editVisitMessage"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
 /* =========================================================
-   NEHA HOMOEOPATHIC CLINIC
-   FRESH JAVASCRIPT
+SUPABASE CONNECTION
 ========================================================= */
 
 const SUPABASE_URL =
@@ -9,177 +828,273 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_HzdRFn56iEpMrCjEUGPong_nFXvo4IU";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+/* =========================================================
+VARIABLES
+========================================================= */
 
 let currentPatient = null;
 let currentVisits = [];
 
 
 /* =========================================================
-   HELPERS
+SHORTCUT
 ========================================================= */
 
 function $(id) {
   return document.getElementById(id);
 }
 
+
+/* =========================================================
+ESCAPE HTML
+========================================================= */
+
 function escapeHtml(value) {
+
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+
 }
+
 
 function formatText(value) {
-  return escapeHtml(value).replace(/\n/g, "<br>");
+
+  return escapeHtml(value)
+    .replace(/\n/g, "<br>");
+
 }
 
-function localDate() {
+
+/* =========================================================
+LOCAL DATE
+========================================================= */
+
+function getLocalDate() {
+
   const d = new Date();
 
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+  const year =
+    d.getFullYear();
 
-  return y + "-" + m + "-" + day;
+  const month =
+    String(d.getMonth() + 1)
+      .padStart(2, "0");
+
+  const day =
+    String(d.getDate())
+      .padStart(2, "0");
+
+  return (
+    year +
+    "-" +
+    month +
+    "-" +
+    day
+  );
+
 }
+
+
+/* =========================================================
+SHORT DATE FORMAT
+EXAMPLE: 19 AUG 2026
+========================================================= */
 
 function shortDate(value) {
 
-  if (!value) return "";
+  if (!value) {
+    return "";
+  }
 
-  const parts = String(value).substring(0, 10).split("-");
+  const parts =
+    String(value)
+      .substring(0, 10)
+      .split("-");
 
-  if (parts.length !== 3) return value;
+  if (parts.length !== 3) {
+    return value;
+  }
 
   const months = [
-    "JAN", "FEB", "MAR", "APR",
-    "MAY", "JUN", "JUL", "AUG",
-    "SEP", "OCT", "NOV", "DEC"
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC"
   ];
+
+  const monthIndex =
+    parseInt(parts[1], 10) - 1;
 
   return (
     parts[2] +
     " " +
-    months[parseInt(parts[1], 10) - 1] +
+    months[monthIndex] +
     " " +
     parts[0]
   );
+
 }
+
+
+/* =========================================================
+MONEY
+========================================================= */
 
 function money(value) {
 
-  return "₹" +
-    Number(value || 0).toLocaleString("en-IN", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    });
+  return (
+    "₹" +
+    Number(value || 0)
+      .toLocaleString("en-IN", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      })
+  );
+
 }
 
 
 /* =========================================================
-   LOGIN
+LOGIN
 ========================================================= */
 
-$("loginButton").addEventListener("click", async function () {
+$("loginButton").addEventListener(
+  "click",
+  async function () {
 
-  const email = $("loginEmail").value.trim();
-  const password = $("loginPassword").value;
+    const email =
+      $("loginEmail")
+        .value
+        .trim();
 
-  $("loginMessage").innerHTML = "";
+    const password =
+      $("loginPassword")
+        .value;
 
-  if (!email || !password) {
+    $("loginMessage").innerHTML = "";
 
-    $("loginMessage").innerHTML =
-      '<div class="message error">' +
-      "Enter email and password." +
-      "</div>";
-
-    return;
-  }
-
-  $("loginButton").disabled = true;
-  $("loginButton").innerText = "Logging in...";
-
-  try {
-
-    const result =
-      await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-    if (result.error) {
+    if (!email || !password) {
 
       $("loginMessage").innerHTML =
         '<div class="message error">' +
-        escapeHtml(result.error.message) +
+        "Enter email and password." +
         "</div>";
 
       return;
+
     }
 
-    showApp();
+    $("loginButton").disabled = true;
+    $("loginButton").innerText =
+      "Logging in...";
 
-  } catch (error) {
+    try {
 
-    $("loginMessage").innerHTML =
-      '<div class="message error">' +
-      escapeHtml(error.message) +
-      "</div>";
+      const result =
+        await supabaseClient.auth
+          .signInWithPassword({
+            email: email,
+            password: password
+          });
 
-  } finally {
+      if (result.error) {
 
-    $("loginButton").disabled = false;
-    $("loginButton").innerText = "Login";
+        $("loginMessage").innerHTML =
+          '<div class="message error">' +
+          escapeHtml(
+            result.error.message
+          ) +
+          "</div>";
+
+        return;
+
+      }
+
+      showApp();
+
+    } catch (error) {
+
+      $("loginMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(
+          error.message
+        ) +
+        "</div>";
+
+    } finally {
+
+      $("loginButton").disabled = false;
+      $("loginButton").innerText =
+        "Login";
+
+    }
 
   }
-
-});
+);
 
 
 /* =========================================================
-   LOGOUT
+LOGOUT
 ========================================================= */
 
-$("logoutButton").addEventListener("click", async function () {
+$("logoutButton").addEventListener(
+  "click",
+  async function () {
 
-  await supabaseClient.auth.signOut();
+    await supabaseClient.auth.signOut();
 
-  currentPatient = null;
-  currentVisits = [];
+    currentPatient = null;
+    currentVisits = [];
 
-  $("appSection").classList.add("hidden");
-  $("loginSection").classList.remove("hidden");
+    $("appSection")
+      .classList
+      .add("hidden");
 
-});
+    $("loginSection")
+      .classList
+      .remove("hidden");
+
+  }
+);
 
 
 /* =========================================================
-   SHOW APPLICATION
+SHOW APP
 ========================================================= */
 
 function showApp() {
 
-  $("loginSection").classList.add("hidden");
-  $("appSection").classList.remove("hidden");
+  $("loginSection")
+    .classList
+    .add("hidden");
 
-  $("visitDate").value = localDate();
+  $("appSection")
+    .classList
+    .remove("hidden");
 
-  if ($("todayText")) {
-    $("todayText").innerText = shortDate(localDate());
-  }
+  $("visitDate").value =
+    getLocalDate();
 
-  if ($("todayDate")) {
-    $("todayDate").innerText = shortDate(localDate());
-  }
-
-  setupBackup();
+  setupBackupSelectors();
 
   loadTodayReport();
 
@@ -187,7 +1102,7 @@ function showApp() {
 
 
 /* =========================================================
-   CHECK LOGIN
+CHECK LOGIN
 ========================================================= */
 
 async function checkLogin() {
@@ -195,7 +1110,8 @@ async function checkLogin() {
   try {
 
     const result =
-      await supabaseClient.auth.getSession();
+      await supabaseClient.auth
+        .getSession();
 
     if (
       result.data &&
@@ -208,7 +1124,10 @@ async function checkLogin() {
 
   } catch (error) {
 
-    console.error("Login check error:", error);
+    console.error(
+      "Login check error:",
+      error
+    );
 
   }
 
@@ -216,60 +1135,33 @@ async function checkLogin() {
 
 
 /* =========================================================
-   TODAY'S REPORT
-========================================================= */
-
-async function loadTodayReport() {
-
-  const today = localDate();
-
-  const result =
-    await supabaseClient
-      .from("visits")
-      .select("id, patient_id, fee_payment")
-      .eq("visit_date", today);
-
-  if (result.error) {
-
-    console.error(result.error);
-    return;
-
-  }
-
-  const visits = result.data || [];
-
-  let total = 0;
-
-  visits.forEach(function (visit) {
-
-    total += Number(visit.fee_payment || 0);
-
-  });
-
-  if ($("todayPatients")) {
-    $("todayPatients").innerText = visits.length;
-  }
-
-  if ($("todayPayment")) {
-    $("todayPayment").innerText = money(total);
-  }
-
-}
-
-
-/* =========================================================
-   SAVE PATIENT
+SAVE PATIENT
 ========================================================= */
 
 $("savePatientButton").addEventListener(
   "click",
   async function () {
 
-    const name = $("patientName").value.trim();
-    const age = $("patientAge").value;
-    const gender = $("patientGender").value;
-    const mobile = $("patientMobile").value.trim();
-    const address = $("patientAddress").value.trim();
+    const name =
+      $("patientName")
+        .value
+        .trim();
+
+    const age =
+      $("patientAge").value;
+
+    const gender =
+      $("patientGender").value;
+
+    const mobile =
+      $("patientMobile")
+        .value
+        .trim();
+
+    const address =
+      $("patientAddress")
+        .value
+        .trim();
 
     $("patientMessage").innerHTML = "";
 
@@ -281,6 +1173,7 @@ $("savePatientButton").addEventListener(
         "</div>";
 
       return;
+
     }
 
     const result =
@@ -289,10 +1182,16 @@ $("savePatientButton").addEventListener(
         .insert([
           {
             name: name,
-            age: age ? parseInt(age, 10) : null,
-            gender: gender || null,
-            mobile: mobile || null,
-            address: address || null
+            age:
+              age
+                ? parseInt(age, 10)
+                : null,
+            gender:
+              gender || null,
+            mobile:
+              mobile || null,
+            address:
+              address || null
           }
         ])
         .select()
@@ -302,10 +1201,13 @@ $("savePatientButton").addEventListener(
 
       $("patientMessage").innerHTML =
         '<div class="message error">' +
-        escapeHtml(result.error.message) +
+        escapeHtml(
+          result.error.message
+        ) +
         "</div>";
 
       return;
+
     }
 
     $("patientMessage").innerHTML =
@@ -320,17 +1222,19 @@ $("savePatientButton").addEventListener(
     $("patientMobile").value = "";
     $("patientAddress").value = "";
 
-    await openPatient(result.data.id);
+    await openPatient(
+      result.data.id
+    );
 
   }
 );
 
 
 /* =========================================================
-   PATIENT SEARCH
+SEARCH PATIENT
 ========================================================= */
 
-let searchTimer = null;
+let searchTimer;
 
 $("searchBox").addEventListener(
   "input",
@@ -338,10 +1242,11 @@ $("searchBox").addEventListener(
 
     clearTimeout(searchTimer);
 
-    searchTimer = setTimeout(
-      searchPatients,
-      300
-    );
+    searchTimer =
+      setTimeout(
+        searchPatients,
+        300
+      );
 
   }
 );
@@ -349,11 +1254,16 @@ $("searchBox").addEventListener(
 
 async function searchPatients() {
 
-  const search = $("searchBox").value.trim();
+  const search =
+    $("searchBox")
+      .value
+      .trim();
 
   $("searchResults").innerHTML = "";
 
-  if (!search) return;
+  if (!search) {
+    return;
+  }
 
   const result =
     await supabaseClient
@@ -372,13 +1282,19 @@ async function searchPatients() {
 
     $("searchResults").innerHTML =
       '<div class="message error">' +
-      escapeHtml(result.error.message) +
+      escapeHtml(
+        result.error.message
+      ) +
       "</div>";
 
     return;
+
   }
 
-  if (!result.data || result.data.length === 0) {
+  if (
+    !result.data ||
+    result.data.length === 0
+  ) {
 
     $("searchResults").innerHTML =
       '<div class="message">' +
@@ -386,62 +1302,81 @@ async function searchPatients() {
       "</div>";
 
     return;
+
   }
 
-  result.data.forEach(function (patient) {
+  result.data.forEach(
+    function (patient) {
 
-    const div = document.createElement("div");
+      const div =
+        document.createElement("div");
 
-    div.className = "patient-result";
+      div.className =
+        "patient-result";
 
-    div.innerHTML =
-      "<strong>" +
-      escapeHtml(patient.name) +
-      "</strong><br>" +
+      div.innerHTML =
 
-      "Patient ID: " +
-      escapeHtml(patient.id) +
-      "<br>" +
+        "<strong>" +
+        escapeHtml(
+          patient.name
+        ) +
+        "</strong><br>" +
 
-      (
-        patient.age
-          ? "Age: " + escapeHtml(patient.age) + "<br>"
-          : ""
-      ) +
+        "Patient ID: " +
+        escapeHtml(
+          patient.id
+        ) +
+        "<br>" +
 
-      (
-        patient.gender
-          ? "Gender: " +
-            escapeHtml(patient.gender) +
-            "<br>"
-          : ""
-      ) +
+        (
+          patient.age
+            ? "Age: " +
+              escapeHtml(patient.age) +
+              "<br>"
+            : ""
+        ) +
 
-      (
-        patient.mobile
-          ? "Mobile: " +
-            escapeHtml(patient.mobile)
-          : ""
+        (
+          patient.gender
+            ? "Gender: " +
+              escapeHtml(
+                patient.gender
+              ) +
+              "<br>"
+            : ""
+        ) +
+
+        (
+          patient.mobile
+            ? "Mobile: " +
+              escapeHtml(
+                patient.mobile
+              )
+            : ""
+        );
+
+      div.addEventListener(
+        "click",
+        function () {
+
+          openPatient(
+            patient.id
+          );
+
+        }
       );
 
-    div.addEventListener(
-      "click",
-      function () {
+      $("searchResults")
+        .appendChild(div);
 
-        openPatient(patient.id);
-
-      }
-    );
-
-    $("searchResults").appendChild(div);
-
-  });
+    }
+  );
 
 }
 
 
 /* =========================================================
-   OPEN PATIENT
+OPEN PATIENT
 ========================================================= */
 
 async function openPatient(patientId) {
@@ -455,33 +1390,43 @@ async function openPatient(patientId) {
 
   if (result.error) {
 
-    alert(result.error.message);
+    alert(
+      result.error.message
+    );
+
     return;
 
   }
 
-  currentPatient = result.data;
+  currentPatient =
+    result.data;
 
-  $("patientSection").classList.remove("hidden");
+  $("patientSection")
+    .classList
+    .remove("hidden");
 
   displayPatient();
 
-  await loadVisits(patientId);
+  await loadVisits(
+    patientId
+  );
 
-  $("patientSection").scrollIntoView({
-    behavior: "smooth"
-  });
+  $("patientSection")
+    .scrollIntoView({
+      behavior: "smooth"
+    });
 
 }
 
 
 /* =========================================================
-   DISPLAY PATIENT
+DISPLAY PATIENT
 ========================================================= */
 
 function displayPatient() {
 
-  const p = currentPatient;
+  const p =
+    currentPatient;
 
   $("patientDetails").innerHTML =
 
@@ -513,14 +1458,16 @@ function displayPatient() {
 
 
 /* =========================================================
-   EDIT PATIENT
+EDIT PATIENT
 ========================================================= */
 
 $("editPatientButton").addEventListener(
   "click",
   function () {
 
-    if (!currentPatient) return;
+    if (!currentPatient) {
+      return;
+    }
 
     $("editName").value =
       currentPatient.name || "";
@@ -545,82 +1492,109 @@ $("editPatientButton").addEventListener(
 );
 
 
-$("cancelPatientEditButton").addEventListener(
-  "click",
-  function () {
+$("cancelPatientEditButton")
+  .addEventListener(
+    "click",
+    function () {
 
-    $("patientEditBox")
-      .classList
-      .add("hidden");
+      $("patientEditBox")
+        .classList
+        .add("hidden");
 
-  }
-);
-
-
-$("savePatientEditButton").addEventListener(
-  "click",
-  async function () {
-
-    if (!currentPatient) return;
-
-    const name =
-      $("editName").value.trim();
-
-    if (!name) {
-
-      $("editPatientMessage").innerHTML =
-        '<div class="message error">' +
-        "Name is required." +
-        "</div>";
-
-      return;
     }
+  );
 
-    const result =
-      await supabaseClient
-        .from("patients")
-        .update({
-          name: name,
-          age: $("editAge").value
-            ? parseInt($("editAge").value, 10)
-            : null,
-          gender:
-            $("editGender").value || null,
-          mobile:
-            $("editMobile").value.trim() || null,
-          address:
-            $("editAddress").value.trim() || null
-        })
-        .eq("id", currentPatient.id)
-        .select()
-        .single();
 
-    if (result.error) {
+$("savePatientEditButton")
+  .addEventListener(
+    "click",
+    async function () {
 
-      $("editPatientMessage").innerHTML =
-        '<div class="message error">' +
-        escapeHtml(result.error.message) +
-        "</div>";
+      if (!currentPatient) {
+        return;
+      }
 
-      return;
+      const name =
+        $("editName")
+          .value
+          .trim();
+
+      if (!name) {
+
+        $("editPatientMessage")
+          .innerHTML =
+          '<div class="message error">' +
+          "Name is required." +
+          "</div>";
+
+        return;
+
+      }
+
+      const result =
+        await supabaseClient
+          .from("patients")
+          .update({
+            name: name,
+            age:
+              $("editAge").value
+                ? parseInt(
+                    $("editAge").value,
+                    10
+                  )
+                : null,
+            gender:
+              $("editGender").value ||
+              null,
+            mobile:
+              $("editMobile")
+                .value
+                .trim() ||
+              null,
+            address:
+              $("editAddress")
+                .value
+                .trim() ||
+              null
+          })
+          .eq(
+            "id",
+            currentPatient.id
+          )
+          .select()
+          .single();
+
+      if (result.error) {
+
+        $("editPatientMessage")
+          .innerHTML =
+          '<div class="message error">' +
+          escapeHtml(
+            result.error.message
+          ) +
+          "</div>";
+
+        return;
+
+      }
+
+      currentPatient =
+        result.data;
+
+      displayPatient();
+
+      $("patientEditBox")
+        .classList
+        .add("hidden");
+
+      await searchPatients();
+
     }
-
-    currentPatient = result.data;
-
-    displayPatient();
-
-    $("patientEditBox")
-      .classList
-      .add("hidden");
-
-    await searchPatients();
-
-  }
-);
+  );
 
 
 /* =========================================================
-   LOAD VISITS
+LOAD VISITS
 ========================================================= */
 
 async function loadVisits(patientId) {
@@ -632,23 +1606,32 @@ async function loadVisits(patientId) {
     await supabaseClient
       .from("visits")
       .select("*")
-      .eq("patient_id", patientId)
-      .order("visit_date", {
-        ascending: false
-      });
+      .eq(
+        "patient_id",
+        patientId
+      )
+      .order(
+        "visit_date",
+        {
+          ascending: false
+        }
+      );
 
   if (result.error) {
 
     $("visitHistory").innerHTML =
       '<div class="message error">' +
-      escapeHtml(result.error.message) +
+      escapeHtml(
+        result.error.message
+      ) +
       "</div>";
 
     return;
 
   }
 
-  currentVisits = result.data || [];
+  currentVisits =
+    result.data || [];
 
   $("visitHistory").innerHTML = "";
 
@@ -660,94 +1643,120 @@ async function loadVisits(patientId) {
       "</div>";
 
     return;
+
   }
 
-  currentVisits.forEach(function (visit) {
+  currentVisits.forEach(
+    function (visit) {
 
-    const div =
-      document.createElement("div");
+      const div =
+        document.createElement("div");
 
-    div.className = "visit";
+      div.className =
+        "visit";
 
-    let html =
+      let html =
 
-      "<strong>Visit Date:</strong> " +
-      shortDate(visit.visit_date);
+        "<strong>Visit Date:</strong> " +
+        shortDate(
+          visit.visit_date
+        );
 
-    if (visit.complaints) {
+      if (visit.complaints) {
+
+        html +=
+          "<p><strong>Chief Complaints:</strong><br>" +
+          formatText(
+            visit.complaints
+          ) +
+          "</p>";
+
+      }
+
+      if (visit.diagnosis) {
+
+        html +=
+          "<p><strong>Diagnosis:</strong><br>" +
+          formatText(
+            visit.diagnosis
+          ) +
+          "</p>";
+
+      }
+
+      if (visit.prescription) {
+
+        html +=
+          "<p><strong>Prescription / Medicines:</strong><br>" +
+          formatText(
+            visit.prescription
+          ) +
+          "</p>";
+
+      }
+
+      if (visit.advice) {
+
+        html +=
+          "<p><strong>Advice:</strong><br>" +
+          formatText(
+            visit.advice
+          ) +
+          "</p>";
+
+      }
+
+      if (visit.follow_up) {
+
+        html +=
+          "<p><strong>Follow-up Date:</strong> " +
+          shortDate(
+            visit.follow_up
+          ) +
+          "</p>";
+
+      }
 
       html +=
-        "<p><strong>Chief Complaints:</strong><br>" +
-        formatText(visit.complaints) +
+        "<p><strong>Fee Payment:</strong> " +
+        money(
+          visit.fee_payment
+        ) +
         "</p>";
-
-    }
-
-    if (visit.diagnosis) {
 
       html +=
-        "<p><strong>Diagnosis:</strong><br>" +
-        formatText(visit.diagnosis) +
-        "</p>";
+        '<div class="visit-buttons">' +
+
+        '<button type="button" ' +
+        'onclick="editVisit(\'' +
+        String(visit.id) +
+        '\')">' +
+        "✏️ Edit" +
+        "</button>" +
+
+        '<button type="button" ' +
+        'class="red" ' +
+        'onclick="deleteVisit(\'' +
+        String(visit.id) +
+        '\')">' +
+        "🗑️ Delete" +
+        "</button>" +
+
+        "</div>";
+
+      div.innerHTML = html;
+
+      $("visitHistory")
+        .appendChild(div);
 
     }
-
-    if (visit.prescription) {
-
-      html +=
-        "<p><strong>Prescription / Medicines:</strong><br>" +
-        formatText(visit.prescription) +
-        "</p>";
-
-    }
-
-    if (visit.advice) {
-
-      html +=
-        "<p><strong>Advice:</strong><br>" +
-        formatText(visit.advice) +
-        "</p>";
-
-    }
-
-    if (visit.follow_up) {
-
-      html +=
-        "<p><strong>Follow-up Date:</strong> " +
-        shortDate(visit.follow_up) +
-        "</p>";
-
-    }
-
-    html +=
-      "<p><strong>Fee Payment:</strong> " +
-      money(visit.fee_payment) +
-      "</p>";
-
-    html +=
-      '<div class="visit-buttons">' +
-
-      '<button type="button" onclick="editVisit(\'' +
-      visit.id +
-      '\')">✏️ Edit</button>' +
-
-      '<button type="button" class="red" onclick="deleteVisit(\'' +
-      visit.id +
-      '\')">🗑️ Delete</button>' +
-
-      "</div>";
-
-    div.innerHTML = html;
-
-    $("visitHistory").appendChild(div);
-
-  });
+  );
 
 }
 
 
 /* =========================================================
-   SAVE VISIT
+SAVE VISIT
 ========================================================= */
 
 $("saveVisitButton").addEventListener(
@@ -756,7 +1765,10 @@ $("saveVisitButton").addEventListener(
 
     if (!currentPatient) {
 
-      alert("Please select a patient first.");
+      alert(
+        "Please select a patient first."
+      );
+
       return;
 
     }
@@ -766,7 +1778,10 @@ $("saveVisitButton").addEventListener(
 
     if (!visitDate) {
 
-      alert("Visit date is required.");
+      alert(
+        "Visit date is required."
+      );
+
       return;
 
     }
@@ -779,20 +1794,44 @@ $("saveVisitButton").addEventListener(
         .from("visits")
         .insert([
           {
-            patient_id: currentPatient.id,
-            visit_date: visitDate,
+            patient_id:
+              currentPatient.id,
+
+            visit_date:
+              visitDate,
+
             complaints:
-              $("complaints").value.trim() || null,
+              $("complaints")
+                .value
+                .trim() ||
+              null,
+
             diagnosis:
-              $("diagnosis").value.trim() || null,
+              $("diagnosis")
+                .value
+                .trim() ||
+              null,
+
             prescription:
-              $("prescription").value.trim() || null,
+              $("prescription")
+                .value
+                .trim() ||
+              null,
+
             advice:
-              $("advice").value.trim() || null,
+              $("advice")
+                .value
+                .trim() ||
+              null,
+
             follow_up:
-              $("followUp").value || null,
+              $("followUp").value ||
+              null,
+
             fee_payment:
-              fee ? Number(fee) : 0
+              fee
+                ? Number(fee)
+                : 0
           }
         ]);
 
@@ -800,10 +1839,13 @@ $("saveVisitButton").addEventListener(
 
       $("visitMessage").innerHTML =
         '<div class="message error">' +
-        escapeHtml(result.error.message) +
+        escapeHtml(
+          result.error.message
+        ) +
         "</div>";
 
       return;
+
     }
 
     $("visitMessage").innerHTML =
@@ -818,909 +1860,250 @@ $("saveVisitButton").addEventListener(
     $("followUp").value = "";
     $("feePayment").value = "";
 
-    await loadVisits(currentPatient.id);
-    await loadTodayReport();
-
-  }
-);
-
-
-/* =========================================================
-   EDIT VISIT
-========================================================= */
-
-window.editVisit = function (visitId) {
-
-  const visit =
-    currentVisits.find(function (v) {
-
-      return String(v.id) === String(visitId);
-
-    });
-
-  if (!visit) return;
-
-  $("editVisitId").value = visit.id;
-  $("editVisitDate").value =
-    visit.visit_date || "";
-
-  $("editComplaints").value =
-    visit.complaints || "";
-
-  $("editDiagnosis").value =
-    visit.diagnosis || "";
-
-  $("editPrescription").value =
-    visit.prescription || "";
-
-  $("editAdvice").value =
-    visit.advice || "";
-
-  $("editFollowUp").value =
-    visit.follow_up || "";
-
-  $("editFeePayment").value =
-    visit.fee_payment || "";
-
-  $("editVisitMessage").innerHTML = "";
-
-  $("visitModal")
-    .classList
-    .remove("hidden");
-
-};
-
-
-/* =========================================================
-   SAVE EDITED VISIT
-========================================================= */
-
-$("saveEditedVisitButton").addEventListener(
-  "click",
-  async function () {
-
-    const visitId =
-      $("editVisitId").value;
-
-    const result =
-      await supabaseClient
-        .from("visits")
-        .update({
-          visit_date:
-            $("editVisitDate").value,
-
-          complaints:
-            $("editComplaints").value.trim() || null,
-
-          diagnosis:
-            $("editDiagnosis").value.trim() || null,
-
-          prescription:
-            $("editPrescription").value.trim() || null,
-
-          advice:
-            $("editAdvice").value.trim() || null,
-
-          follow_up:
-            $("editFollowUp").value || null,
-
-          fee_payment:
-            $("editFeePayment").value
-              ? Number($("editFeePayment").value)
-              : 0
-        })
-        .eq("id", visitId);
-
-    if (result.error) {
-
-      $("editVisitMessage").innerHTML =
-        '<div class="message error">' +
-        escapeHtml(result.error.message) +
-        "</div>";
-
-      return;
-    }
-
-    $("visitModal")
-      .classList
-      .add("hidden");
-
-    await loadVisits(currentPatient.id);
-    await loadTodayReport();
-
-  }
-);
-
-
-/* =========================================================
-   CANCEL VISIT EDIT
-========================================================= */
-
-$("cancelVisitEditButton").addEventListener(
-  "click",
-  function () {
-
-    $("visitModal")
-      .classList
-      .add("hidden");
-
-  }
-);
-
-
-/* =========================================================
-   DELETE VISIT
-========================================================= */
-
-window.deleteVisit = async function (visitId) {
-
-  const ok =
-    confirm(
-      "Are you sure you want to delete this visit?\n\n" +
-      "This cannot be undone."
+    await loadVisits(
+      currentPatient.id
     );
 
-  if (!ok) return;
-
-  const result =
-    await supabaseClient
-      .from("visits")
-      .delete()
-      .eq("id", visitId);
-
-  if (result.error) {
-
-    alert(result.error.message);
-    return;
-
-  }
-
-  await loadVisits(currentPatient.id);
-  await loadTodayReport();
-
-};
-
-
-/* =========================================================
-   PRINT PATIENT RECORD
-========================================================= */
-
-$("printPatientButton").addEventListener(
-  "click",
-  function () {
-
-    if (!currentPatient) return;
-
-    let rows = "";
-
-    currentVisits.forEach(function (visit) {
-
-      rows +=
-        "<tr>" +
-
-        "<td>" +
-        shortDate(visit.visit_date) +
-        "</td>" +
-
-        "<td>" +
-        formatText(visit.complaints || "") +
-        "</td>" +
-
-        "<td>" +
-        formatText(visit.diagnosis || "") +
-        "</td>" +
-
-        "<td>" +
-        formatText(visit.prescription || "") +
-        "</td>" +
-
-        "<td>" +
-        formatText(visit.advice || "") +
-        "</td>" +
-
-        "<td>" +
-        shortDate(visit.follow_up || "") +
-        "</td>" +
-
-        "<td>" +
-        money(visit.fee_payment) +
-        "</td>" +
-
-        "</tr>";
-
-    });
-
-    const printWindow =
-      window.open("", "_blank");
-
-    if (!printWindow) {
-
-      alert(
-        "Please allow pop-ups in your browser."
-      );
-
-      return;
-
-    }
-
-    const html =
-      "<!DOCTYPE html>" +
-
-      "<html><head>" +
-
-      "<title>Patient Record</title>" +
-
-      "<style>" +
-
-      "body{font-family:Arial;padding:25px}" +
-
-      "h1{text-align:center;color:#176b4d}" +
-
-      "table{width:100%;border-collapse:collapse;font-size:10px}" +
-
-      "th,td{border:1px solid #999;padding:5px;vertical-align:top}" +
-
-      "th{background:#eef7f2}" +
-
-      "</style>" +
-
-      "</head><body>" +
-
-      "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
-
-      "<h2>Complete Patient Record</h2>" +
-
-      "<p>" +
-
-      "<strong>Patient ID:</strong> " +
-      escapeHtml(currentPatient.id) +
-      "<br>" +
-
-      "<strong>Name:</strong> " +
-      escapeHtml(currentPatient.name) +
-      "<br>" +
-
-      "<strong>Age:</strong> " +
-      escapeHtml(currentPatient.age || "") +
-      "<br>" +
-
-      "<strong>Gender:</strong> " +
-      escapeHtml(currentPatient.gender || "") +
-      "<br>" +
-
-      "<strong>Mobile:</strong> " +
-      escapeHtml(currentPatient.mobile || "") +
-      "<br>" +
-
-      "<strong>Address:</strong> " +
-      formatText(currentPatient.address || "") +
-
-      "</p>" +
-
-      "<table>" +
-
-      "<thead><tr>" +
-
-      "<th>Date</th>" +
-      "<th>Complaints</th>" +
-      "<th>Diagnosis</th>" +
-      "<th>Prescription</th>" +
-      "<th>Advice</th>" +
-      "<th>Follow-up</th>" +
-      "<th>Fee</th>" +
-
-      "</tr></thead>" +
-
-      "<tbody>" +
-
-      (
-        rows ||
-        "<tr><td colspan='7'>No visits found.</td></tr>"
-      ) +
-
-      "</tbody></table>" +
-
-      "<p>Printed: " +
-      shortDate(localDate()) +
-      "</p>" +
-
-      "<script>" +
-
-      "window.onload=function(){window.print();};" +
-
-      "<\\/script>" +
-
-      "</body></html>";
-
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
+    await loadTodayReport();
 
   }
 );
 
 
 /* =========================================================
-   TODAY REPORT PRINT
+EDIT VISIT
 ========================================================= */
 
-$("printTodayButton").addEventListener(
-  "click",
-  async function () {
-
-    const today = localDate();
-
-    const result =
-      await supabaseClient
-        .from("visits")
-        .select("*")
-        .eq("visit_date", today)
-        .order("id");
-
-    if (result.error) {
-
-      alert(result.error.message);
-      return;
-
-    }
-
-    const visits = result.data || [];
-
-    const patientIds = [
-      ...new Set(
-        visits.map(function (v) {
-          return v.patient_id;
-        })
-      )
-    ];
-
-    let patients = [];
-
-    if (patientIds.length > 0) {
-
-      const patientResult =
-        await supabaseClient
-          .from("patients")
-          .select("*")
-          .in("id", patientIds);
-
-      if (patientResult.error) {
-
-        alert(patientResult.error.message);
-        return;
-
-      }
-
-      patients = patientResult.data || [];
-
-    }
-
-    let total = 0;
-    let rows = "";
-
-    visits.forEach(function (visit, index) {
-
-      const patient =
-        patients.find(function (p) {
-
-          return String(p.id) ===
-            String(visit.patient_id);
-
-        });
-
-      total +=
-        Number(visit.fee_payment || 0);
-
-      rows +=
-        "<tr>" +
-
-        "<td>" +
-        (index + 1) +
-        "</td>" +
-
-        "<td>" +
-        escapeHtml(patient ? patient.name : "") +
-        "</td>" +
-
-        "<td>" +
-        escapeHtml(patient ? patient.age : "") +
-        "</td>" +
-
-        "<td>" +
-        escapeHtml(patient ? patient.gender : "") +
-        "</td>" +
-
-        "<td>" +
-        escapeHtml(patient ? patient.mobile : "") +
-        "</td>" +
-
-        "<td>" +
-        money(visit.fee_payment) +
-        "</td>" +
-
-        "</tr>";
-
-    });
-
-    const printWindow =
-      window.open("", "_blank");
-
-    if (!printWindow) {
-
-      alert(
-        "Please allow pop-ups in your browser."
-      );
-
-      return;
-
-    }
-
-    const html =
-      "<!DOCTYPE html>" +
-
-      "<html><head>" +
-
-      "<title>Today's Report</title>" +
-
-      "<style>" +
-
-      "body{font-family:Arial;padding:25px}" +
-
-      "h1,h2{text-align:center;color:#176b4d}" +
-
-      "table{width:100%;border-collapse:collapse}" +
-
-      "th,td{border:1px solid #999;padding:7px}" +
-
-      "th{background:#eef7f2}" +
-
-      "</style>" +
-
-      "</head><body>" +
-
-      "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
-
-      "<h2>Today's Patient & Payment Report</h2>" +
-
-      "<p style='text-align:center'>" +
-
-      shortDate(today) +
-
-      "</p>" +
-
-      "<p style='text-align:center'>" +
-
-      "<strong>Total Patients:</strong> " +
-      visits.length +
-
-      " &nbsp;&nbsp; " +
-
-      "<strong>Total Payment:</strong> " +
-      money(total) +
-
-      "</p>" +
-
-      "<table>" +
-
-      "<thead><tr>" +
-
-      "<th>#</th>" +
-      "<th>Patient</th>" +
-      "<th>Age</th>" +
-      "<th>Gender</th>" +
-      "<th>Mobile</th>" +
-      "<th>Fee</th>" +
-
-      "</tr></thead>" +
-
-      "<tbody>" +
-
-      (
-        rows ||
-        "<tr><td colspan='6'>No patients today.</td></tr>"
-      ) +
-
-      "</tbody></table>" +
-
-      "<script>" +
-
-      "window.onload=function(){window.print();};" +
-
-      "<\\/script>" +
-
-      "</body></html>";
-
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
-
-  }
-);
-
-
-/* =========================================================
-   MONTHLY BACKUP SETUP
-========================================================= */
-
-function setupBackup() {
-
-  if (!$("backupMonth") || !$("backupYear")) {
-    return;
-  }
-
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  ];
-
-  $("backupMonth").innerHTML = "";
-
-  months.forEach(function (name, index) {
-
-    const option =
-      document.createElement("option");
-
-    option.value = index + 1;
-    option.textContent = name;
-
-    $("backupMonth").appendChild(option);
-
-  });
-
-  const currentYear =
-    new Date().getFullYear();
-
-  $("backupYear").innerHTML = "";
-
-  for (
-    let year = currentYear;
-    year >= currentYear - 10;
-    year--
-  ) {
-
-    const option =
-      document.createElement("option");
-
-    option.value = year;
-    option.textContent = year;
-
-    $("backupYear").appendChild(option);
-
-  }
-
-  $("backupMonth").value =
-    new Date().getMonth() + 1;
-
-  $("backupYear").value =
-    currentYear;
-
-}
-
-
-/* =========================================================
-   GET MONTHLY DATA
-========================================================= */
-
-async function getMonthlyData() {
-
-  const month =
-    parseInt($("backupMonth").value, 10);
-
-  const year =
-    parseInt($("backupYear").value, 10);
-
-  const start =
-    year +
-    "-" +
-    String(month).padStart(2, "0") +
-    "-01";
-
-  const lastDay =
-    new Date(year, month, 0).getDate();
-
-  const end =
-    year +
-    "-" +
-    String(month).padStart(2, "0") +
-    "-" +
-    String(lastDay).padStart(2, "0");
-
-  const visitResult =
-    await supabaseClient
-      .from("visits")
-      .select("*")
-      .gte("visit_date", start)
-      .lte("visit_date", end)
-      .order("visit_date", {
-        ascending: true
-      });
-
-  if (visitResult.error) {
-    throw visitResult.error;
-  }
-
-  const visits =
-    visitResult.data || [];
-
-  const ids = [
-    ...new Set(
-      visits.map(function (v) {
-        return v.patient_id;
-      })
-    )
-  ];
-
-  let patients = [];
-
-  if (ids.length > 0) {
-
-    const patientResult =
-      await supabaseClient
-        .from("patients")
-        .select("*")
-        .in("id", ids);
-
-    if (patientResult.error) {
-      throw patientResult.error;
-    }
-
-    patients =
-      patientResult.data || [];
-
-  }
-
-  return {
-    month: month,
-    year: year,
-    visits: visits,
-    patients: patients
-  };
-
-}
-
-
-/* =========================================================
-   TEXT BACKUP
-========================================================= */
-
-$("monthlyTextButton").addEventListener(
-  "click",
-  async function () {
-
-    try {
-
-      const data =
-        await getMonthlyData();
-
-      let total = 0;
-
-      let text =
-        "==================================================\n" +
-        "NEHA HOMOEOPATHIC CLINIC\n" +
-        "MONTHLY PATIENT BACKUP\n" +
-        "==================================================\n\n";
-
-      data.visits.forEach(
-        function (visit, index) {
-
-          const patient =
-            data.patients.find(function (p) {
-
-              return String(p.id) ===
-                String(visit.patient_id);
-
-            });
-
-          total +=
-            Number(visit.fee_payment || 0);
-
-          text +=
-            "RECORD " +
-            (index + 1) +
-            "\n" +
-
-            "--------------------------------------------------\n" +
-
-            "Patient ID       : " +
-            (patient ? patient.id : "") +
-            "\n" +
-
-            "Name             : " +
-            (patient ? patient.name : "") +
-            "\n" +
-
-            "Age              : " +
-            (patient ? patient.age || "" : "") +
-            "\n" +
-
-            "Gender           : " +
-            (patient ? patient.gender || "" : "") +
-            "\n" +
-
-            "Mobile           : " +
-            (patient ? patient.mobile || "" : "") +
-            "\n" +
-
-            "Address          : " +
-            (patient ? patient.address || "" : "") +
-            "\n" +
-
-            "Visit Date       : " +
-            shortDate(visit.visit_date) +
-            "\n" +
-
-            "Chief Complaints : " +
-            (visit.complaints || "") +
-            "\n" +
-
-            "Diagnosis        : " +
-            (visit.diagnosis || "") +
-            "\n" +
-
-            "Prescription     : " +
-            (visit.prescription || "") +
-            "\n" +
-
-            "Advice           : " +
-            (visit.advice || "") +
-            "\n" +
-
-            "Follow-up        : " +
-            shortDate(visit.follow_up) +
-            "\n" +
-
-            "Fee Payment      : " +
-            money(visit.fee_payment) +
-            "\n\n";
+window.editVisit =
+  function (visitId) {
+
+    const visit =
+      currentVisits.find(
+        function (v) {
+
+          return String(v.id) ===
+            String(visitId);
 
         }
       );
 
-      text +=
-        "==================================================\n" +
-
-        "TOTAL VISITS     : " +
-        data.visits.length +
-        "\n" +
-
-        "TOTAL PAYMENT    : " +
-        money(total) +
-        "\n" +
-
-        "BACKUP DATE      : " +
-        shortDate(localDate()) +
-        "\n" +
-
-        "==================================================";
-
-      const blob =
-        new Blob(
-          [text],
-          {
-            type:
-              "text/plain;charset=utf-8"
-          }
-        );
-
-      const url =
-        URL.createObjectURL(blob);
-
-      const link =
-        document.createElement("a");
-
-      link.href = url;
-
-      link.download =
-        "NEHA_CLINIC_" +
-        data.year +
-        "_" +
-        String(data.month).padStart(2, "0") +
-        "_BACKUP.txt";
-
-      document.body.appendChild(link);
-
-      link.click();
-
-      link.remove();
-
-      URL.revokeObjectURL(url);
-
-      $("backupMessage").innerHTML =
-        '<div class="message">' +
-        "Text backup downloaded successfully." +
-        "</div>";
-
-    } catch (error) {
-
-      $("backupMessage").innerHTML =
-        '<div class="message error">' +
-        escapeHtml(error.message) +
-        "</div>";
-
+    if (!visit) {
+      return;
     }
 
-  }
-);
+    $("editVisitId").value =
+      visit.id;
+
+    $("editVisitDate").value =
+      visit.visit_date || "";
+
+    $("editComplaints").value =
+      visit.complaints || "";
+
+    $("editDiagnosis").value =
+      visit.diagnosis || "";
+
+    $("editPrescription").value =
+      visit.prescription || "";
+
+    $("editAdvice").value =
+      visit.advice || "";
+
+    $("editFollowUp").value =
+      visit.follow_up || "";
+
+    $("editFeePayment").value =
+      visit.fee_payment || "";
+
+    $("editVisitMessage")
+      .innerHTML = "";
+
+    $("visitModal")
+      .classList
+      .remove("hidden");
+
+  };
 
 
 /* =========================================================
-   MONTHLY PDF / PRINT
+SAVE EDITED VISIT
 ========================================================= */
 
-$("monthlyPdfButton").addEventListener(
-  "click",
-  async function () {
+$("saveEditedVisitButton")
+  .addEventListener(
+    "click",
+    async function () {
 
-    try {
+      const visitId =
+        $("editVisitId").value;
 
-      const data =
-        await getMonthlyData();
+      const result =
+        await supabaseClient
+          .from("visits")
+          .update({
 
-      let total = 0;
+            visit_date:
+              $("editVisitDate")
+                .value,
+
+            complaints:
+              $("editComplaints")
+                .value
+                .trim() ||
+              null,
+
+            diagnosis:
+              $("editDiagnosis")
+                .value
+                .trim() ||
+              null,
+
+            prescription:
+              $("editPrescription")
+                .value
+                .trim() ||
+              null,
+
+            advice:
+              $("editAdvice")
+                .value
+                .trim() ||
+              null,
+
+            follow_up:
+              $("editFollowUp")
+                .value ||
+              null,
+
+            fee_payment:
+              $("editFeePayment")
+                .value
+                ? Number(
+                    $("editFeePayment")
+                      .value
+                  )
+                : 0
+
+          })
+          .eq(
+            "id",
+            visitId
+          );
+
+      if (result.error) {
+
+        $("editVisitMessage")
+          .innerHTML =
+          '<div class="message error">' +
+          escapeHtml(
+            result.error.message
+          ) +
+          "</div>";
+
+        return;
+
+      }
+
+      $("visitModal")
+        .classList
+        .add("hidden");
+
+      await loadVisits(
+        currentPatient.id
+      );
+
+      await loadTodayReport();
+
+    }
+  );
+
+
+/* =========================================================
+CANCEL VISIT EDIT
+========================================================= */
+
+$("cancelVisitEditButton")
+  .addEventListener(
+    "click",
+    function () {
+
+      $("visitModal")
+        .classList
+        .add("hidden");
+
+    }
+  );
+
+
+/* =========================================================
+DELETE VISIT
+========================================================= */
+
+window.deleteVisit =
+  async function (visitId) {
+
+    const answer =
+      confirm(
+        "Are you sure you want to delete this visit?\n\n" +
+        "This cannot be undone."
+      );
+
+    if (!answer) {
+      return;
+    }
+
+    const result =
+      await supabaseClient
+        .from("visits")
+        .delete()
+        .eq(
+          "id",
+          visitId
+        );
+
+    if (result.error) {
+
+      alert(
+        result.error.message
+      );
+
+      return;
+
+    }
+
+    await loadVisits(
+      currentPatient.id
+    );
+
+    await loadTodayReport();
+
+  };
+
+
+/* =========================================================
+PRINT PATIENT COMPLETE RECORD
+========================================================= */
+
+$("printPatientButton")
+  .addEventListener(
+    "click",
+    function () {
+
+      if (!currentPatient) {
+        return;
+      }
+
       let rows = "";
 
-      data.visits.forEach(
-        function (visit, index) {
-
-          const patient =
-            data.patients.find(function (p) {
-
-              return String(p.id) ===
-                String(visit.patient_id);
-
-            });
-
-          total +=
-            Number(visit.fee_payment || 0);
+      currentVisits.forEach(
+        function (visit) {
 
           rows +=
             "<tr>" +
 
             "<td>" +
-            (index + 1) +
-            "</td>" +
-
-            "<td>" +
-            shortDate(visit.visit_date) +
-            "</td>" +
-
-            "<td>" +
-            escapeHtml(
-              patient ? patient.id : ""
-            ) +
-            "</td>" +
-
-            "<td>" +
-            escapeHtml(
-              patient ? patient.name : ""
-            ) +
-            "</td>" +
-
-            "<td>" +
-            escapeHtml(
-              patient ? patient.age || "" : ""
-            ) +
-            "</td>" +
-
-            "<td>" +
-            escapeHtml(
-              patient ? patient.gender || "" : ""
-            ) +
-            "</td>" +
-
-            "<td>" +
-            escapeHtml(
-              patient ? patient.mobile || "" : ""
+            shortDate(
+              visit.visit_date
             ) +
             "</td>" +
 
@@ -1743,7 +2126,21 @@ $("monthlyPdfButton").addEventListener(
             "</td>" +
 
             "<td>" +
-            money(visit.fee_payment) +
+            formatText(
+              visit.advice || ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            shortDate(
+              visit.follow_up || ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            money(
+              visit.fee_payment
+            ) +
             "</td>" +
 
             "</tr>";
@@ -1751,13 +2148,11 @@ $("monthlyPdfButton").addEventListener(
         }
       );
 
-      const monthName =
-        $("backupMonth")
-          .selectedOptions[0]
-          .textContent;
-
       const printWindow =
-        window.open("", "_blank");
+        window.open(
+          "",
+          "_blank"
+        );
 
       if (!printWindow) {
 
@@ -1772,42 +2167,347 @@ $("monthlyPdfButton").addEventListener(
       const html =
         "<!DOCTYPE html>" +
 
-        "<html><head>" +
+        "<html>" +
 
-        "<title>Monthly Backup</title>" +
+        "<head>" +
+
+        "<title>Patient Record</title>" +
 
         "<style>" +
 
-        "body{font-family:Arial;padding:15px}" +
+        "body{font-family:Arial;padding:25px}" +
 
         "h1{text-align:center;color:#176b4d}" +
 
-        "h2{text-align:center}" +
+        "table{width:100%;border-collapse:collapse;font-size:10px}" +
 
-        "table{width:100%;border-collapse:collapse;font-size:8px}" +
+        "th,td{border:1px solid #999;padding:5px;vertical-align:top}" +
 
-        "th,td{border:1px solid #999;padding:4px;vertical-align:top}" +
-
-        "th{background:#176b4d;color:white}" +
+        "th{background:#eef7f2}" +
 
         "</style>" +
 
-        "</head><body>" +
+        "</head>" +
+
+        "<body>" +
 
         "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
 
-        "<h2>Monthly Patient Backup - " +
-        monthName +
-        " " +
-        data.year +
-        "</h2>" +
+        "<h2>Complete Patient Record</h2>" +
+
+        "<p>" +
+
+        "<strong>Patient ID:</strong> " +
+        escapeHtml(
+          currentPatient.id
+        ) +
+
+        "<br>" +
+
+        "<strong>Name:</strong> " +
+        escapeHtml(
+          currentPatient.name
+        ) +
+
+        "<br>" +
+
+        "<strong>Age:</strong> " +
+        escapeHtml(
+          currentPatient.age || ""
+        ) +
+
+        "<br>" +
+
+        "<strong>Gender:</strong> " +
+        escapeHtml(
+          currentPatient.gender || ""
+        ) +
+
+        "<br>" +
+
+        "<strong>Mobile:</strong> " +
+        escapeHtml(
+          currentPatient.mobile || ""
+        ) +
+
+        "<br>" +
+
+        "<strong>Address:</strong> " +
+        formatText(
+          currentPatient.address || ""
+        ) +
+
+        "</p>" +
+
+        "<table>" +
+
+        "<thead>" +
+
+        "<tr>" +
+
+        "<th>Date</th>" +
+        "<th>Complaints</th>" +
+        "<th>Diagnosis</th>" +
+        "<th>Prescription</th>" +
+        "<th>Advice</th>" +
+        "<th>Follow-up</th>" +
+        "<th>Fee</th>" +
+
+        "</tr>" +
+
+        "</thead>" +
+
+        "<tbody>" +
+
+        (
+          rows ||
+          "<tr><td colspan='7'>No visits found.</td></tr>"
+        ) +
+
+        "</tbody>" +
+
+        "</table>" +
+
+        "<p>Printed: " +
+        shortDate(
+          getLocalDate()
+        ) +
+        "</p>" +
+
+        "</body>" +
+
+        "</html>";
+
+      printWindow.document.open();
+
+      printWindow.document.write(
+        html
+      );
+
+      printWindow.document.close();
+
+      printWindow.onload =
+        function () {
+
+          printWindow.print();
+
+        };
+
+    }
+  );
+
+
+/* =========================================================
+TODAY REPORT
+========================================================= */
+
+$("printTodayButton")
+  .addEventListener(
+    "click",
+    async function () {
+
+      const today =
+        getLocalDate();
+
+      const result =
+        await supabaseClient
+          .from("visits")
+          .select("*")
+          .eq(
+            "visit_date",
+            today
+          )
+          .order(
+            "visit_date",
+            {
+              ascending: true
+            }
+          );
+
+      if (result.error) {
+
+        alert(
+          result.error.message
+        );
+
+        return;
+
+      }
+
+      const visits =
+        result.data || [];
+
+      const ids = [
+        ...new Set(
+          visits.map(
+            function (v) {
+              return v.patient_id;
+            }
+          )
+        )
+      ];
+
+      let patients = [];
+
+      if (ids.length > 0) {
+
+        const patientResult =
+          await supabaseClient
+            .from("patients")
+            .select("*")
+            .in(
+              "id",
+              ids
+            );
+
+        if (patientResult.error) {
+
+          alert(
+            patientResult.error.message
+          );
+
+          return;
+
+        }
+
+        patients =
+          patientResult.data || [];
+
+      }
+
+      let total = 0;
+      let rows = "";
+
+      visits.forEach(
+        function (visit, index) {
+
+          const patient =
+            patients.find(
+              function (p) {
+
+                return String(p.id) ===
+                  String(
+                    visit.patient_id
+                  );
+
+              }
+            );
+
+          total +=
+            Number(
+              visit.fee_payment || 0
+            );
+
+          rows +=
+
+            "<tr>" +
+
+            "<td>" +
+            (index + 1) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient
+                ? patient.name
+                : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient
+                ? patient.age || ""
+                : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient
+                ? patient.gender || ""
+                : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient
+                ? patient.mobile || ""
+                : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            money(
+              visit.fee_payment
+            ) +
+            "</td>" +
+
+            "</tr>";
+
+        }
+      );
+
+      const printWindow =
+        window.open(
+          "",
+          "_blank"
+        );
+
+      if (!printWindow) {
+
+        alert(
+          "Please allow pop-ups in your browser."
+        );
+
+        return;
+
+      }
+
+      const html =
+        "<!DOCTYPE html>" +
+
+        "<html>" +
+
+        "<head>" +
+
+        "<title>Today's Report</title>" +
+
+        "<style>" +
+
+        "body{font-family:Arial;padding:25px}" +
+
+        "h1,h2{text-align:center;color:#176b4d}" +
+
+        "table{width:100%;border-collapse:collapse}" +
+
+        "th,td{border:1px solid #999;padding:7px}" +
+
+        "th{background:#eef7f2}" +
+
+        "</style>" +
+
+        "</head>" +
+
+        "<body>" +
+
+        "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
+
+        "<h2>Today's Patient & Payment Report</h2>" +
 
         "<p style='text-align:center'>" +
 
-        "<strong>Total Visits:</strong> " +
-        data.visits.length +
+        shortDate(today) +
 
-        " &nbsp;&nbsp;&nbsp; " +
+        "</p>" +
+
+        "<p style='text-align:center'>" +
+
+        "<strong>Total Patients:</strong> " +
+        visits.length +
+
+        "&nbsp;&nbsp;&nbsp;" +
 
         "<strong>Total Payment:</strong> " +
         money(total) +
@@ -1816,73 +2516,753 @@ $("monthlyPdfButton").addEventListener(
 
         "<table>" +
 
-        "<thead><tr>" +
+        "<thead>" +
+
+        "<tr>" +
 
         "<th>#</th>" +
-        "<th>Date</th>" +
-        "<th>ID</th>" +
-        "<th>Name</th>" +
+        "<th>Patient</th>" +
         "<th>Age</th>" +
         "<th>Gender</th>" +
         "<th>Mobile</th>" +
-        "<th>Complaints</th>" +
-        "<th>Diagnosis</th>" +
-        "<th>Prescription</th>" +
         "<th>Fee</th>" +
 
-        "</tr></thead>" +
+        "</tr>" +
+
+        "</thead>" +
 
         "<tbody>" +
 
         (
           rows ||
-          "<tr><td colspan='11'>No records found.</td></tr>"
+          "<tr><td colspan='6'>No patients today.</td></tr>"
         ) +
 
-        "</tbody></table>" +
+        "</tbody>" +
 
-        "<p>Backup generated: " +
-        shortDate(localDate()) +
-        "</p>" +
+        "</table>" +
 
-        "<script>" +
+        "</body>" +
 
-        "window.onload=function(){window.print();};" +
-
-        "<\\/script>" +
-
-        "</body></html>";
+        "</html>";
 
       printWindow.document.open();
 
-      printWindow.document.write(html);
+      printWindow.document.write(
+        html
+      );
 
       printWindow.document.close();
 
-      $("backupMessage").innerHTML =
-        '<div class="message">' +
-        "Report opened. Choose Save as PDF in the print window." +
-        "</div>";
+      printWindow.onload =
+        function () {
 
-    } catch (error) {
+          printWindow.print();
 
-      $("backupMessage").innerHTML =
-        '<div class="message error">' +
-        escapeHtml(error.message) +
-        "</div>";
+        };
 
     }
-
-  }
-);
+  );
 
 
 /* =========================================================
-   START
+BACKUP SELECTORS
 ========================================================= */
+
+function setupBackupSelectors() {
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  $("backupMonth").innerHTML = "";
+
+  months.forEach(
+    function (name, index) {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        index + 1;
+
+      option.textContent =
+        name;
+
+      $("backupMonth")
+        .appendChild(option);
+
+    }
+  );
+
+  const currentYear =
+    new Date().getFullYear();
+
+  $("backupYear").innerHTML = "";
+
+  for (
+    let year = currentYear;
+    year >= currentYear - 10;
+    year--
+  ) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      year;
+
+    option.textContent =
+      year;
+
+    $("backupYear")
+      .appendChild(option);
+
+  }
+
+  $("backupMonth").value =
+    new Date().getMonth() + 1;
+
+  $("backupYear").value =
+    currentYear;
+
+}
+
+
+/* =========================================================
+GET MONTHLY DATA
+========================================================= */
+
+async function getMonthlyData() {
+
+  const month =
+    parseInt(
+      $("backupMonth").value,
+      10
+    );
+
+  const year =
+    parseInt(
+      $("backupYear").value,
+      10
+    );
+
+  const start =
+    year +
+    "-" +
+    String(month)
+      .padStart(2, "0") +
+    "-01";
+
+  const lastDay =
+    new Date(
+      year,
+      month,
+      0
+    ).getDate();
+
+  const end =
+    year +
+    "-" +
+    String(month)
+      .padStart(2, "0") +
+    "-" +
+    String(lastDay)
+      .padStart(2, "0");
+
+  const visitResult =
+    await supabaseClient
+      .from("visits")
+      .select("*")
+      .gte(
+        "visit_date",
+        start
+      )
+      .lte(
+        "visit_date",
+        end
+      )
+      .order(
+        "visit_date",
+        {
+          ascending: true
+        }
+      );
+
+  if (visitResult.error) {
+
+    throw visitResult.error;
+
+  }
+
+  const visits =
+    visitResult.data || [];
+
+  const ids = [
+    ...new Set(
+      visits.map(
+        function (v) {
+          return v.patient_id;
+        }
+      )
+    )
+  ];
+
+  let patients = [];
+
+  if (ids.length > 0) {
+
+    const patientResult =
+      await supabaseClient
+        .from("patients")
+        .select("*")
+        .in(
+          "id",
+          ids
+        );
+
+    if (patientResult.error) {
+
+      throw patientResult.error;
+
+    }
+
+    patients =
+      patientResult.data || [];
+
+  }
+
+  return {
+    month: month,
+    year: year,
+    visits: visits,
+    patients: patients
+  };
+
+}
+
+
+/* =========================================================
+TEXT BACKUP
+========================================================= */
+
+$("monthlyTextButton")
+  .addEventListener(
+    "click",
+    async function () {
+
+      try {
+
+        const data =
+          await getMonthlyData();
+
+        let total = 0;
+
+        let text =
+          "==================================================\n" +
+          "NEHA HOMOEOPATHIC CLINIC\n" +
+          "MONTHLY PATIENT BACKUP\n" +
+          "==================================================\n\n";
+
+        data.visits.forEach(
+          function (visit, index) {
+
+            const patient =
+              data.patients.find(
+                function (p) {
+
+                  return String(p.id) ===
+                    String(
+                      visit.patient_id
+                    );
+
+                }
+              );
+
+            total +=
+              Number(
+                visit.fee_payment || 0
+              );
+
+            text +=
+
+              "RECORD " +
+              (index + 1) +
+              "\n" +
+
+              "--------------------------------------------------\n" +
+
+              "Patient ID       : " +
+              (
+                patient
+                  ? patient.id
+                  : ""
+              ) +
+              "\n" +
+
+              "Name             : " +
+              (
+                patient
+                  ? patient.name
+                  : ""
+              ) +
+              "\n" +
+
+              "Age              : " +
+              (
+                patient
+                  ? patient.age || ""
+                  : ""
+              ) +
+              "\n" +
+
+              "Gender           : " +
+              (
+                patient
+                  ? patient.gender || ""
+                  : ""
+              ) +
+              "\n" +
+
+              "Mobile           : " +
+              (
+                patient
+                  ? patient.mobile || ""
+                  : ""
+              ) +
+              "\n" +
+
+              "Address          : " +
+              (
+                patient
+                  ? patient.address || ""
+                  : ""
+              ) +
+              "\n" +
+
+              "Visit Date       : " +
+              shortDate(
+                visit.visit_date
+              ) +
+              "\n" +
+
+              "Chief Complaints : " +
+              (
+                visit.complaints || ""
+              ) +
+              "\n" +
+
+              "Diagnosis        : " +
+              (
+                visit.diagnosis || ""
+              ) +
+              "\n" +
+
+              "Prescription     : " +
+              (
+                visit.prescription || ""
+              ) +
+              "\n" +
+
+              "Advice           : " +
+              (
+                visit.advice || ""
+              ) +
+              "\n" +
+
+              "Follow-up        : " +
+              shortDate(
+                visit.follow_up
+              ) +
+              "\n" +
+
+              "Fee Payment      : " +
+              money(
+                visit.fee_payment
+              ) +
+              "\n\n";
+
+          }
+        );
+
+        text +=
+
+          "==================================================\n" +
+
+          "TOTAL VISITS     : " +
+          data.visits.length +
+          "\n" +
+
+          "TOTAL PAYMENT    : " +
+          money(total) +
+          "\n" +
+
+          "BACKUP DATE      : " +
+          shortDate(
+            getLocalDate()
+          ) +
+          "\n" +
+
+          "==================================================";
+
+        const blob =
+          new Blob(
+            [text],
+            {
+              type:
+                "text/plain;charset=utf-8"
+            }
+          );
+
+        const url =
+          URL.createObjectURL(
+            blob
+          );
+
+        const link =
+          document.createElement(
+            "a"
+          );
+
+        link.href = url;
+
+        link.download =
+          "NEHA_CLINIC_" +
+          data.year +
+          "_" +
+          String(data.month)
+            .padStart(2, "0") +
+          "_BACKUP.txt";
+
+        document.body
+          .appendChild(link);
+
+        link.click();
+
+        link.remove();
+
+        URL.revokeObjectURL(
+          url
+        );
+
+        $("backupMessage")
+          .innerHTML =
+          '<div class="message">' +
+          "Text backup downloaded successfully." +
+          "</div>";
+
+      } catch (error) {
+
+        $("backupMessage")
+          .innerHTML =
+          '<div class="message error">' +
+          escapeHtml(
+            error.message
+          ) +
+          "</div>";
+
+      }
+
+    }
+  );
+
+
+/* =========================================================
+MONTHLY PDF / PRINT
+========================================================= */
+
+$("monthlyPdfButton")
+  .addEventListener(
+    "click",
+    async function () {
+
+      try {
+
+        const data =
+          await getMonthlyData();
+
+        let total = 0;
+        let rows = "";
+
+        data.visits.forEach(
+          function (visit, index) {
+
+            const patient =
+              data.patients.find(
+                function (p) {
+
+                  return String(p.id) ===
+                    String(
+                      visit.patient_id
+                    );
+
+                }
+              );
+
+            total +=
+              Number(
+                visit.fee_payment || 0
+              );
+
+            rows +=
+
+              "<tr>" +
+
+              "<td>" +
+              (index + 1) +
+              "</td>" +
+
+              "<td>" +
+              shortDate(
+                visit.visit_date
+              ) +
+              "</td>" +
+
+              "<td>" +
+              escapeHtml(
+                patient
+                  ? patient.id
+                  : ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              escapeHtml(
+                patient
+                  ? patient.name
+                  : ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              escapeHtml(
+                patient
+                  ? patient.age || ""
+                  : ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              escapeHtml(
+                patient
+                  ? patient.gender || ""
+                  : ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              escapeHtml(
+                patient
+                  ? patient.mobile || ""
+                  : ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              formatText(
+                visit.complaints || ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              formatText(
+                visit.diagnosis || ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              formatText(
+                visit.prescription || ""
+              ) +
+              "</td>" +
+
+              "<td>" +
+              money(
+                visit.fee_payment
+              ) +
+              "</td>" +
+
+              "</tr>";
+
+          }
+        );
+
+        const monthName =
+          $("backupMonth")
+            .selectedOptions[0]
+            .textContent;
+
+        const printWindow =
+          window.open(
+            "",
+            "_blank"
+          );
+
+        if (!printWindow) {
+
+          alert(
+            "Please allow pop-ups in your browser."
+          );
+
+          return;
+
+        }
+
+        const html =
+          "<!DOCTYPE html>" +
+
+          "<html>" +
+
+          "<head>" +
+
+          "<title>Monthly Backup</title>" +
+
+          "<style>" +
+
+          "body{font-family:Arial;padding:15px}" +
+
+          "h1{text-align:center;color:#176b4d}" +
+
+          "h2{text-align:center}" +
+
+          "table{width:100%;border-collapse:collapse;font-size:8px}" +
+
+          "th,td{border:1px solid #999;padding:4px;vertical-align:top}" +
+
+          "th{background:#176b4d;color:white}" +
+
+          "</style>" +
+
+          "</head>" +
+
+          "<body>" +
+
+          "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
+
+          "<h2>Monthly Patient Backup - " +
+          monthName +
+          " " +
+          data.year +
+          "</h2>" +
+
+          "<p style='text-align:center'>" +
+
+          "<strong>Total Visits:</strong> " +
+          data.visits.length +
+
+          "&nbsp;&nbsp;&nbsp;" +
+
+          "<strong>Total Payment:</strong> " +
+          money(total) +
+
+          "</p>" +
+
+          "<table>" +
+
+          "<thead>" +
+
+          "<tr>" +
+
+          "<th>#</th>" +
+          "<th>Date</th>" +
+          "<th>ID</th>" +
+          "<th>Name</th>" +
+          "<th>Age</th>" +
+          "<th>Gender</th>" +
+          "<th>Mobile</th>" +
+          "<th>Complaints</th>" +
+          "<th>Diagnosis</th>" +
+          "<th>Prescription</th>" +
+          "<th>Fee</th>" +
+
+          "</tr>" +
+
+          "</thead>" +
+
+          "<tbody>" +
+
+          (
+            rows ||
+            "<tr><td colspan='11'>No records found.</td></tr>"
+          ) +
+
+          "</tbody>" +
+
+          "</table>" +
+
+          "<p>Backup generated: " +
+          shortDate(
+            getLocalDate()
+          ) +
+          "</p>" +
+
+          "</body>" +
+
+          "</html>";
+
+        printWindow.document.open();
+
+        printWindow.document.write(
+          html
+        );
+
+        printWindow.document.close();
+
+        printWindow.onload =
+          function () {
+
+            printWindow.print();
+
+          };
+
+        $("backupMessage")
+          .innerHTML =
+          '<div class="message">' +
+          "Monthly report opened. Select Save as PDF in the print window." +
+          "</div>";
+
+      } catch (error) {
+
+        $("backupMessage")
+          .innerHTML =
+          '<div class="message error">' +
+          escapeHtml(
+            error.message
+          ) +
+          "</div>";
+
+      }
+
+    }
+  );
+
+
+/* =========================================================
+START
+========================================================= */
+
+console.log(
+  "NEHA HOMOEOPATHIC CLINIC: JavaScript loaded."
+);
 
 checkLogin();
 
-console.log(
-  "NEHA HOMOEOPATHIC CLINIC JavaScript loaded successfully."
-);
+</script>
+
+</body>
+</html>
