@@ -1,1349 +1,1284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEHA HOMOEOPATHIC CLINIC</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>NEHA HOMOEOPATHIC CLINIC</title>
 
-  <style>
-    * { box-sizing: border-box; }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7f6;
-      color: #222;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    header {
-      background: #176b4d;
-      color: white;
-      padding: 18px;
-      text-align: center;
-    }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7f6;
+  color: #222;
+}
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
+header {
+  background: #176b4d;
+  color: white;
+  padding: 18px;
+  text-align: center;
+}
 
-    header p {
-      margin: 5px 0 0;
-      font-size: 14px;
-    }
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
 
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 15px;
-    }
+header p {
+  margin: 5px 0 0;
+}
 
-    .card {
-      background: white;
-      padding: 18px;
-      margin-bottom: 18px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    }
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 15px;
+}
 
-    h2 {
-      margin-top: 0;
-      color: #176b4d;
-    }
+.card {
+  background: white;
+  padding: 18px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
 
-    h3 {
-      color: #176b4d;
-    }
+h2 {
+  color: #176b4d;
+}
 
-    input, textarea, select, button {
-      width: 100%;
-      padding: 11px;
-      margin-top: 7px;
-      margin-bottom: 12px;
-      border: 1px solid #ccc;
-      border-radius: 7px;
-      font-size: 15px;
-    }
+input,
+textarea,
+select,
+button {
+  width: 100%;
+  padding: 11px;
+  margin-top: 7px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 15px;
+}
 
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
 
-    button {
-      background: #176b4d;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
+button {
+  background: #176b4d;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
 
-    button:hover {
-      opacity: .9;
-    }
+button:hover {
+  opacity: .9;
+}
 
-    .secondary {
-      background: #555;
-    }
+.secondary {
+  background: #555;
+}
 
-    .edit-button {
-      width: auto;
-      padding: 9px 16px;
-      display: inline-block;
-    }
+.edit {
+  background: #176b4d;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
+.hidden {
+  display: none !important;
+}
 
-    .patient-result {
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-top: 8px;
-      cursor: pointer;
-      background: #fafafa;
-    }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+}
 
-    .patient-result:hover {
-      background: #eef7f2;
-    }
+.patient-result {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  background: #fafafa;
+}
 
-    .visit {
-      border-left: 4px solid #176b4d;
-      padding: 12px;
-      margin-bottom: 12px;
-      background: #f8faf9;
-      border-radius: 6px;
-    }
+.patient-result:hover {
+  background: #eef7f2;
+}
 
-    .edit-box {
-      background: #f1f7f4;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 12px;
-      border: 1px solid #c9ddd4;
-    }
+.visit {
+  border-left: 4px solid #176b4d;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f8faf9;
+  border-radius: 6px;
+}
 
-    .hidden {
-      display: none !important;
-    }
+.message {
+  padding: 10px;
+  border-radius: 7px;
+  margin-bottom: 12px;
+  background: #eef7f2;
+}
 
-    .topbar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
+.error {
+  background: #ffe9e7;
+  color: #9b1c1c;
+}
 
-    .topbar button {
-      width: auto;
-      padding: 9px 16px;
-      margin: 0;
-    }
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
 
-    .message {
-      padding: 10px;
-      border-radius: 7px;
-      margin-bottom: 12px;
-      background: #eef7f2;
-    }
+.topbar button {
+  width: auto;
+}
 
-    .error {
-      background: #ffe9e7;
-      color: #9b1c1c;
-    }
+.edit-box {
+  background: #f1f7f4;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
 
-    hr {
-      border: 0;
-      border-top: 1px solid #ddd;
-      margin: 20px 0;
-    }
+@media(max-width:700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 
-    @media (max-width: 700px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
+  header h1 {
+    font-size: 20px;
+  }
 
-      header h1 {
-        font-size: 20px;
-      }
-    }
-  </style>
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar button {
+    width: 100%;
+  }
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <h1>NEHA HOMOEOPATHIC CLINIC</h1>
-  <p>Patient Management System</p>
+<h1>NEHA HOMOEOPATHIC CLINIC</h1>
+<p>Patient Management System</p>
 </header>
 
 <div class="container">
 
-  <!-- LOGIN -->
-  <div id="loginSection" class="card">
-    <h2>Clinic Login</h2>
+<!-- ================= LOGIN ================= -->
 
-    <input
-      type="email"
-      id="loginEmail"
-      placeholder="Email address"
-    >
+<div id="loginSection" class="card">
 
-    <input
-      type="password"
-      id="loginPassword"
-      placeholder="Password"
-    >
+<h2>Clinic Login</h2>
 
-    <button type="button" onclick="login()">Login</button>
+<input
+  id="loginEmail"
+  type="email"
+  placeholder="Email address"
+>
 
-    <div id="loginMessage"></div>
-  </div>
+<input
+  id="loginPassword"
+  type="password"
+  placeholder="Password"
+>
 
+<button id="loginButton" type="button">
+Login
+</button>
 
-  <!-- APP -->
-  <div id="appSection" class="hidden">
+<div id="loginMessage"></div>
 
-    <div class="card">
-      <div class="topbar">
-        <strong>Clinic Dashboard</strong>
-
-        <button
-          type="button"
-          class="secondary"
-          onclick="logout()"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-
-
-    <!-- ADD PATIENT -->
-    <div class="card">
-
-      <h2>Add New Patient</h2>
-
-      <div class="grid">
-
-        <div>
-          <label>Name *</label>
-          <input
-            id="patientName"
-            type="text"
-            placeholder="Patient name"
-          >
-        </div>
-
-        <div>
-          <label>Age</label>
-          <input
-            id="patientAge"
-            type="number"
-            placeholder="Age"
-          >
-        </div>
-
-        <div>
-          <label>Gender</label>
-
-          <select id="patientGender">
-            <option value="">Select</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Mobile</label>
-          <input
-            id="patientMobile"
-            type="tel"
-            placeholder="Mobile number"
-          >
-        </div>
-
-      </div>
-
-      <label>Address</label>
-
-      <textarea
-        id="patientAddress"
-        placeholder="Address"
-      ></textarea>
-
-      <button
-        type="button"
-        onclick="addPatient()"
-      >
-        Save Patient
-      </button>
-
-      <div id="patientMessage"></div>
-
-    </div>
-
-
-    <!-- SEARCH -->
-    <div class="card">
-
-      <h2>Search Patient</h2>
-
-      <input
-        id="searchBox"
-        type="text"
-        placeholder="Search by patient name or mobile number"
-        oninput="searchPatients()"
-      >
-
-      <div id="searchResults"></div>
-
-    </div>
-
-
-    <!-- PATIENT PROFILE -->
-    <div
-      id="patientSection"
-      class="card hidden"
-    >
-
-      <h2>Patient Profile</h2>
-
-      <div id="patientDetails"></div>
-
-      <!-- EDIT PATIENT -->
-      <div
-        id="patientEditBox"
-        class="edit-box hidden"
-      >
-
-        <h3>Edit Patient</h3>
-
-        <label>Name *</label>
-        <input id="editPatientName">
-
-        <label>Age</label>
-        <input
-          id="editPatientAge"
-          type="number"
-        >
-
-        <label>Gender</label>
-
-        <select id="editPatientGender">
-          <option value="">Select</option>
-          <option>Male</option>
-          <option>Female</option>
-          <option>Other</option>
-        </select>
-
-        <label>Mobile</label>
-        <input id="editPatientMobile">
-
-        <label>Address</label>
-        <textarea id="editPatientAddress"></textarea>
-
-        <button
-          type="button"
-          onclick="savePatientEdit()"
-        >
-          Save Patient Changes
-        </button>
-
-        <button
-          type="button"
-          class="secondary"
-          onclick="cancelPatientEdit()"
-        >
-          Cancel
-        </button>
-
-        <div id="editPatientMessage"></div>
-
-      </div>
-
-
-      <hr>
-
-
-      <!-- VISIT HISTORY -->
-      <h2>Visit History</h2>
-
-      <div id="visitHistory"></div>
-
-
-      <hr>
-
-
-      <!-- ADD VISIT -->
-      <h2>Add New Visit</h2>
-
-      <label>Visit Date</label>
-
-      <input
-        id="visitDate"
-        type="date"
-      >
-
-      <label>Chief Complaints</label>
-      <textarea id="complaints"></textarea>
-
-      <label>Diagnosis</label>
-      <textarea id="diagnosis"></textarea>
-
-      <label>Prescription / Medicines</label>
-      <textarea id="prescription"></textarea>
-
-      <label>Advice</label>
-      <textarea id="advice"></textarea>
-
-      <label>Follow-up Date</label>
-
-      <input
-        id="followUp"
-        type="date"
-      >
-
-      <label>Notes</label>
-      <textarea id="notes"></textarea>
-
-      <button
-        type="button"
-        onclick="addVisit()"
-      >
-        Save Visit
-      </button>
-
-      <div id="visitMessage"></div>
-
-    </div>
-
-  </div>
 </div>
 
 
+<!-- ================= APPLICATION ================= -->
+
+<div id="appSection" class="hidden">
+
+<div class="card">
+
+<div class="topbar">
+
+<strong>Clinic Dashboard</strong>
+
+<button
+  id="logoutButton"
+  class="secondary"
+  type="button"
+>
+Logout
+</button>
+
+</div>
+
+</div>
+
+
+<!-- ================= ADD PATIENT ================= -->
+
+<div class="card">
+
+<h2>Add New Patient</h2>
+
+<div class="grid">
+
+<div>
+<label>Name *</label>
+
+<input
+  id="patientName"
+  type="text"
+  placeholder="Patient name"
+>
+</div>
+
+<div>
+<label>Age</label>
+
+<input
+  id="patientAge"
+  type="number"
+  placeholder="Age"
+>
+</div>
+
+<div>
+<label>Gender</label>
+
+<select id="patientGender">
+
+<option value="">Select</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
+
+</select>
+
+</div>
+
+<div>
+<label>Mobile</label>
+
+<input
+  id="patientMobile"
+  type="tel"
+  placeholder="Mobile number"
+>
+
+</div>
+
+</div>
+
+<label>Address</label>
+
+<textarea
+  id="patientAddress"
+  placeholder="Address"
+></textarea>
+
+<button id="savePatientButton" type="button">
+Save Patient
+</button>
+
+<div id="patientMessage"></div>
+
+</div>
+
+
+<!-- ================= SEARCH ================= -->
+
+<div class="card">
+
+<h2>Search Patient</h2>
+
+<input
+  id="searchBox"
+  type="text"
+  placeholder="Search by name or mobile"
+>
+
+<div id="searchResults"></div>
+
+</div>
+
+
+<!-- ================= PATIENT PROFILE ================= -->
+
+<div
+  id="patientSection"
+  class="card hidden"
+>
+
+<h2>Patient Profile</h2>
+
+<div id="patientDetails"></div>
+
+<button
+  id="editPatientButton"
+  class="edit"
+  type="button"
+>
+✏️ Edit Patient
+</button>
+
+
+<!-- PATIENT EDIT -->
+
+<div
+  id="patientEditBox"
+  class="edit-box hidden"
+>
+
+<h3>Edit Patient</h3>
+
+<label>Name</label>
+
+<input id="editName">
+
+<label>Age</label>
+
+<input
+  id="editAge"
+  type="number"
+>
+
+<label>Gender</label>
+
+<select id="editGender">
+
+<option value="">Select</option>
+<option value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
+
+</select>
+
+<label>Mobile</label>
+
+<input id="editMobile">
+
+<label>Address</label>
+
+<textarea id="editAddress"></textarea>
+
+<button
+  id="savePatientEditButton"
+  type="button"
+>
+Save Changes
+</button>
+
+<button
+  id="cancelPatientEditButton"
+  class="secondary"
+  type="button"
+>
+Cancel
+</button>
+
+<div id="editPatientMessage"></div>
+
+</div>
+
+
+<hr>
+
+<h2>Visit History</h2>
+
+<div id="visitHistory"></div>
+
+
+<hr>
+
+<h2>Add New Visit</h2>
+
+<label>Visit Date</label>
+
+<input
+  id="visitDate"
+  type="date"
+>
+
+<label>Chief Complaints</label>
+
+<textarea id="complaints"></textarea>
+
+<label>Diagnosis</label>
+
+<textarea id="diagnosis"></textarea>
+
+<label>Prescription / Medicines</label>
+
+<textarea id="prescription"></textarea>
+
+<label>Advice</label>
+
+<textarea id="advice"></textarea>
+
+<label>Follow-up Date</label>
+
+<input
+  id="followUp"
+  type="date"
+>
+
+<label>Notes</label>
+
+<textarea id="notes"></textarea>
+
+<button
+  id="saveVisitButton"
+  type="button"
+>
+Save Visit
+</button>
+
+<div id="visitMessage"></div>
+
+</div>
+
+</div>
+
 <script>
 
-  // =========================================================
-  // SUPABASE CONNECTION
-  // =========================================================
+/* =====================================================
+   SUPABASE CONNECTION
+===================================================== */
 
-  const SUPABASE_URL =
-    "https://snoyzbsnbhjxzemuoewe.supabase.co";
+const SUPABASE_URL =
+"https://snoyzbsnbhjxzemuoewe.supabase.co";
 
-  const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_HzdRFn56iEpMrCjEUGPong_nFXvo4IU";
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_HzdRFn56iEpMrCjEUGPong_nFXvo4IU";
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY
-    );
+const supabaseClient =
+window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
-  let currentPatient = null;
 
+/* =====================================================
+   VARIABLES
+===================================================== */
 
-  // =========================================================
-  // LOGIN
-  // =========================================================
+let currentPatient = null;
 
-  async function login() {
 
-    const email =
-      document.getElementById("loginEmail")
-        .value.trim();
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
-    const password =
-      document.getElementById("loginPassword")
-        .value;
+const loginButton =
+document.getElementById("loginButton");
 
-    const message =
-      document.getElementById("loginMessage");
+const logoutButton =
+document.getElementById("logoutButton");
 
-    message.innerHTML = "";
+const savePatientButton =
+document.getElementById("savePatientButton");
 
-    if (!email || !password) {
+const saveVisitButton =
+document.getElementById("saveVisitButton");
 
-      showMessage(
-        message,
-        "Enter email and password.",
-        true
-      );
+const editPatientButton =
+document.getElementById("editPatientButton");
 
-      return;
-    }
+const savePatientEditButton =
+document.getElementById("savePatientEditButton");
 
-    try {
+const cancelPatientEditButton =
+document.getElementById("cancelPatientEditButton");
 
-      const result =
-        await supabaseClient.auth.signInWithPassword({
-          email: email,
-          password: password
-        });
 
-      if (result.error) {
+/* =====================================================
+   LOGIN
+===================================================== */
 
-        showMessage(
-          message,
-          result.error.message,
-          true
-        );
+loginButton.addEventListener("click", async function() {
 
-        return;
-      }
+  const email =
+    document.getElementById("loginEmail")
+    .value
+    .trim();
 
-      showApp();
+  const password =
+    document.getElementById("loginPassword")
+    .value;
 
-    } catch (error) {
+  const message =
+    document.getElementById("loginMessage");
 
-      showMessage(
-        message,
-        error.message || "Login failed.",
-        true
-      );
-    }
-  }
+  message.innerHTML = "";
 
+  if (!email || !password) {
 
-  // =========================================================
-  // LOGOUT
-  // =========================================================
+    message.innerHTML =
+      '<div class="message error">Enter email and password.</div>';
 
-  async function logout() {
+    return;
+  }
 
-    await supabaseClient.auth.signOut();
+  loginButton.disabled = true;
+  loginButton.innerText = "Logging in...";
 
-    document.getElementById("appSection")
-      .classList.add("hidden");
+  try {
 
-    document.getElementById("loginSection")
-      .classList.remove("hidden");
+    const result =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
 
-    document.getElementById("patientSection")
-      .classList.add("hidden");
+    if (result.error) {
 
-    currentPatient = null;
-  }
+      message.innerHTML =
+        '<div class="message error">' +
+        escapeHtml(result.error.message) +
+        '</div>';
 
+      return;
+    }
 
-  // =========================================================
-  // CHECK LOGIN
-  // =========================================================
+    showApp();
 
-  async function checkLogin() {
+  } catch(error) {
 
-    try {
+    message.innerHTML =
+      '<div class="message error">' +
+      escapeHtml(error.message) +
+      '</div>';
 
-      const result =
-        await supabaseClient.auth.getSession();
+  } finally {
 
-      if (result.data && result.data.session) {
-        showApp();
-      }
+    loginButton.disabled = false;
+    loginButton.innerText = "Login";
+  }
 
-    } catch (error) {
+});
 
-      console.log("Session check:", error);
-    }
-  }
 
+/* =====================================================
+   LOGOUT
+===================================================== */
 
-  // =========================================================
-  // SHOW APP
-  // =========================================================
+logoutButton.addEventListener("click", async function() {
 
-  function showApp() {
+  await supabaseClient.auth.signOut();
 
-    document.getElementById("loginSection")
-      .classList.add("hidden");
+  currentPatient = null;
 
-    document.getElementById("appSection")
-      .classList.remove("hidden");
+  document
+    .getElementById("appSection")
+    .classList.add("hidden");
 
-    document.getElementById("visitDate").value =
-      new Date().toISOString().split("T")[0];
-  }
+  document
+    .getElementById("loginSection")
+    .classList.remove("hidden");
 
+});
 
-  // =========================================================
-  // ADD PATIENT
-  // =========================================================
 
-  async function addPatient() {
+/* =====================================================
+   SHOW APP
+===================================================== */
 
-    const name =
-      document.getElementById("patientName")
-        .value.trim();
+function showApp() {
 
-    const age =
-      document.getElementById("patientAge")
-        .value;
+  document
+    .getElementById("loginSection")
+    .classList.add("hidden");
 
-    const gender =
-      document.getElementById("patientGender")
-        .value;
+  document
+    .getElementById("appSection")
+    .classList.remove("hidden");
 
-    const mobile =
-      document.getElementById("patientMobile")
-        .value.trim();
+  document
+    .getElementById("visitDate")
+    .value =
+    new Date()
+    .toISOString()
+    .split("T")[0];
+}
 
-    const address =
-      document.getElementById("patientAddress")
-        .value.trim();
 
-    const message =
-      document.getElementById("patientMessage");
+/* =====================================================
+   CHECK EXISTING LOGIN
+===================================================== */
 
-    message.innerHTML = "";
+async function checkLogin() {
 
-    if (!name) {
+  const result =
+    await supabaseClient.auth.getSession();
 
-      showMessage(
-        message,
-        "Patient name is required.",
-        true
-      );
+  if (
+    result.data &&
+    result.data.session
+  ) {
 
-      return;
-    }
+    showApp();
+  }
+}
 
-    const result =
-      await supabaseClient
-        .from("patients")
-        .insert([{
-          name: name,
-          age: age ? parseInt(age) : null,
-          gender: gender || null,
-          mobile: mobile || null,
-          address: address || null
-        }])
-        .select()
-        .single();
 
-    if (result.error) {
+/* =====================================================
+   SAVE PATIENT
+===================================================== */
 
-      showMessage(
-        message,
-        result.error.message,
-        true
-      );
+savePatientButton.addEventListener(
+"click",
+async function() {
 
-      return;
-    }
+  const name =
+    document
+    .getElementById("patientName")
+    .value
+    .trim();
 
-    showMessage(
-      message,
-      "Patient saved successfully. Patient ID: " +
-      result.data.id
-    );
+  const age =
+    document
+    .getElementById("patientAge")
+    .value;
 
-    document.getElementById("patientName").value = "";
-    document.getElementById("patientAge").value = "";
-    document.getElementById("patientGender").value = "";
-    document.getElementById("patientMobile").value = "";
-    document.getElementById("patientAddress").value = "";
+  const gender =
+    document
+    .getElementById("patientGender")
+    .value;
 
-    await openPatient(result.data.id);
-  }
+  const mobile =
+    document
+    .getElementById("patientMobile")
+    .value
+    .trim();
 
+  const address =
+    document
+    .getElementById("patientAddress")
+    .value
+    .trim();
 
-  // =========================================================
-  // SEARCH PATIENTS
-  // =========================================================
+  const message =
+    document.getElementById("patientMessage");
 
-  let searchTimer;
+  message.innerHTML = "";
 
-  async function searchPatients() {
+  if (!name) {
 
-    clearTimeout(searchTimer);
+    message.innerHTML =
+      '<div class="message error">Patient name is required.</div>';
 
-    searchTimer = setTimeout(async function() {
+    return;
+  }
 
-      const search =
-        document.getElementById("searchBox")
-          .value.trim();
+  const result =
+    await supabaseClient
+    .from("patients")
+    .insert([{
+      name: name,
+      age: age ? parseInt(age) : null,
+      gender: gender || null,
+      mobile: mobile || null,
+      address: address || null
+    }])
+    .select()
+    .single();
 
-      const results =
-        document.getElementById("searchResults");
+  if (result.error) {
 
-      results.innerHTML = "";
+    message.innerHTML =
+      '<div class="message error">' +
+      escapeHtml(result.error.message) +
+      '</div>';
 
-      if (!search) {
-        return;
-      }
+    return;
+  }
 
-      const result =
-        await supabaseClient
-          .from("patients")
-          .select("*")
-          .or(
-            `name.ilike.%${search}%,mobile.ilike.%${search}%`
-          )
-          .order("name");
+  message.innerHTML =
+    '<div class="message">' +
+    'Patient saved successfully. ID: ' +
+    result.data.id +
+    '</div>';
 
-      if (result.error) {
+  document.getElementById("patientName").value = "";
+  document.getElementById("patientAge").value = "";
+  document.getElementById("patientGender").value = "";
+  document.getElementById("patientMobile").value = "";
+  document.getElementById("patientAddress").value = "";
 
-        results.innerHTML =
-          `<div class="message error">
-            ${escapeHtml(result.error.message)}
-          </div>`;
+  openPatient(result.data.id);
 
-        return;
-      }
+});
 
-      const data = result.data;
 
-      if (!data || data.length === 0) {
+/* =====================================================
+   SEARCH
+===================================================== */
 
-        results.innerHTML =
-          `<div class="message">
-            No patient found.
-          </div>`;
+let searchTimer;
 
-        return;
-      }
+document
+.getElementById("searchBox")
+.addEventListener("input", function() {
 
-      data.forEach(function(patient) {
+  clearTimeout(searchTimer);
 
-        const div =
-          document.createElement("div");
+  searchTimer =
+    setTimeout(searchPatients, 300);
 
-        div.className =
-          "patient-result";
+});
 
-        div.innerHTML = `
-          <strong>
-            ${escapeHtml(patient.name)}
-          </strong><br>
 
-          Patient ID: ${patient.id}<br>
+async function searchPatients() {
 
-          ${
-            patient.age
-              ? "Age: " + patient.age + "<br>"
-              : ""
-          }
+  const search =
+    document
+    .getElementById("searchBox")
+    .value
+    .trim();
 
-          ${
-            patient.gender
-              ? "Gender: " +
-                escapeHtml(patient.gender) +
-                "<br>"
-              : ""
-          }
+  const results =
+    document.getElementById("searchResults");
 
-          ${
-            patient.mobile
-              ? "Mobile: " +
-                escapeHtml(patient.mobile)
-              : ""
-          }
-        `;
+  results.innerHTML = "";
 
-        div.onclick = function() {
-          openPatient(patient.id);
-        };
+  if (!search) {
+    return;
+  }
 
-        results.appendChild(div);
-      });
+  const result =
+    await supabaseClient
+    .from("patients")
+    .select("*")
+    .or(
+      "name.ilike.%" +
+      search +
+      "%,mobile.ilike.%" +
+      search +
+      "%"
+    )
+    .order("name");
 
-    }, 300);
-  }
+  if (result.error) {
 
+    results.innerHTML =
+      '<div class="message error">' +
+      escapeHtml(result.error.message) +
+      '</div>';
 
-  // =========================================================
-  // OPEN PATIENT
-  // =========================================================
+    return;
+  }
 
-  async function openPatient(patientId) {
+  if (
+    !result.data ||
+    result.data.length === 0
+  ) {
 
-    const result =
-      await supabaseClient
-        .from("patients")
-        .select("*")
-        .eq("id", patientId)
-        .single();
+    results.innerHTML =
+      '<div class="message">No patient found.</div>';
 
-    if (result.error) {
+    return;
+  }
 
-      alert(result.error.message);
+  result.data.forEach(function(patient) {
 
-      return;
-    }
+    const div =
+      document.createElement("div");
 
-    currentPatient = result.data;
+    div.className =
+      "patient-result";
 
-    document.getElementById("patientSection")
-      .classList.remove("hidden");
+    div.innerHTML =
+      "<strong>" +
+      escapeHtml(patient.name) +
+      "</strong><br>" +
 
-    renderPatientDetails(currentPatient);
+      "Patient ID: " +
+      patient.id +
+      "<br>" +
 
-    document.getElementById("patientEditBox")
-      .classList.add("hidden");
+      (patient.age
+        ? "Age: " + patient.age + "<br>"
+        : "") +
 
-    await loadVisits(patientId);
+      (patient.gender
+        ? "Gender: " +
+          escapeHtml(patient.gender) +
+          "<br>"
+        : "") +
 
-    document.getElementById("patientSection")
-      .scrollIntoView({
-        behavior: "smooth"
-      });
-  }
+      (patient.mobile
+        ? "Mobile: " +
+          escapeHtml(patient.mobile)
+        : "");
 
+    div.addEventListener(
+      "click",
+      function() {
+        openPatient(patient.id);
+      }
+    );
 
-  // =========================================================
-  // DISPLAY PATIENT
-  // =========================================================
+    results.appendChild(div);
 
-  function renderPatientDetails(patient) {
+  });
 
-    document.getElementById("patientDetails").innerHTML = `
+}
 
-      <p>
-        <strong>Patient ID:</strong>
-        ${patient.id}
-      </p>
 
-      <p>
-        <strong>Name:</strong>
-        ${escapeHtml(patient.name)}
-      </p>
+/* =====================================================
+   OPEN PATIENT
+===================================================== */
 
-      <p>
-        <strong>Age:</strong>
-        ${patient.age ?? ""}
-      </p>
+async function openPatient(patientId) {
 
-      <p>
-        <strong>Gender:</strong>
-        ${escapeHtml(patient.gender ?? "")}
-      </p>
+  const result =
+    await supabaseClient
+    .from("patients")
+    .select("*")
+    .eq("id", patientId)
+    .single();
 
-      <p>
-        <strong>Mobile:</strong>
-        ${escapeHtml(patient.mobile ?? "")}
-      </p>
+  if (result.error) {
 
-      <p>
-        <strong>Address:</strong>
-        ${escapeHtml(patient.address ?? "")}
-      </p>
+    alert(result.error.message);
+    return;
+  }
 
-      <button
-        type="button"
-        class="edit-button"
-        onclick="editPatient()"
-      >
-        ✏️ Edit Patient
-      </button>
-    `;
-  }
+  currentPatient =
+    result.data;
 
+  document
+    .getElementById("patientSection")
+    .classList.remove("hidden");
 
-  // =========================================================
-  // EDIT PATIENT
-  // =========================================================
+  displayPatient();
 
-  function editPatient() {
+  await loadVisits(patientId);
 
-    if (!currentPatient) {
-      return;
-    }
+  document
+    .getElementById("patientSection")
+    .scrollIntoView({
+      behavior: "smooth"
+    });
+}
 
-    document.getElementById("editPatientName").value =
-      currentPatient.name || "";
 
-    document.getElementById("editPatientAge").value =
-      currentPatient.age ?? "";
+/* =====================================================
+   DISPLAY PATIENT
+===================================================== */
 
-    document.getElementById("editPatientGender").value =
-      currentPatient.gender || "";
+function displayPatient() {
 
-    document.getElementById("editPatientMobile").value =
-      currentPatient.mobile || "";
+  const p =
+    currentPatient;
 
-    document.getElementById("editPatientAddress").value =
-      currentPatient.address || "";
+  document
+    .getElementById("patientDetails")
+    .innerHTML =
 
-    document.getElementById("editPatientMessage")
-      .innerHTML = "";
+    "<p><strong>Patient ID:</strong> " +
+    p.id +
+    "</p>" +
 
-    document.getElementById("patientEditBox")
-      .classList.remove("hidden");
-  }
+    "<p><strong>Name:</strong> " +
+    escapeHtml(p.name) +
+    "</p>" +
 
+    "<p><strong>Age:</strong> " +
+    (p.age ?? "") +
+    "</p>" +
 
-  // =========================================================
-  // CANCEL PATIENT EDIT
-  // =========================================================
+    "<p><strong>Gender:</strong> " +
+    escapeHtml(p.gender ?? "") +
+    "</p>" +
 
-  function cancelPatientEdit() {
+    "<p><strong>Mobile:</strong> " +
+    escapeHtml(p.mobile ?? "") +
+    "</p>" +
 
-    document.getElementById("patientEditBox")
-      .classList.add("hidden");
-  }
+    "<p><strong>Address:</strong> " +
+    escapeHtml(p.address ?? "") +
+    "</p>";
 
+}
 
-  // =========================================================
-  // SAVE PATIENT EDIT
-  // =========================================================
 
-  async function savePatientEdit() {
+/* =====================================================
+   EDIT PATIENT
+===================================================== */
 
-    if (!currentPatient) {
-      return;
-    }
+editPatientButton.addEventListener(
+"click",
+function() {
 
-    const name =
-      document.getElementById("editPatientName")
-        .value.trim();
+  if (!currentPatient) {
+    return;
+  }
 
-    const age =
-      document.getElementById("editPatientAge")
-        .value;
+  document.getElementById("editName").value =
+    currentPatient.name || "";
 
-    const gender =
-      document.getElementById("editPatientGender")
-        .value;
+  document.getElementById("editAge").value =
+    currentPatient.age ?? "";
 
-    const mobile =
-      document.getElementById("editPatientMobile")
-        .value.trim();
+  document.getElementById("editGender").value =
+    currentPatient.gender || "";
 
-    const address =
-      document.getElementById("editPatientAddress")
-        .value.trim();
+  document.getElementById("editMobile").value =
+    currentPatient.mobile || "";
 
-    const message =
-      document.getElementById("editPatientMessage");
+  document.getElementById("editAddress").value =
+    currentPatient.address || "";
 
-    if (!name) {
+  document
+    .getElementById("patientEditBox")
+    .classList.remove("hidden");
 
-      showMessage(
-        message,
-        "Patient name is required.",
-        true
-      );
+});
 
-      return;
-    }
 
-    const result =
-      await supabaseClient
-        .from("patients")
-        .update({
-          name: name,
-          age: age ? parseInt(age) : null,
-          gender: gender || null,
-          mobile: mobile || null,
-          address: address || null
-        })
-        .eq("id", currentPatient.id)
-        .select()
-        .single();
-
-    if (result.error) {
-
-      showMessage(
-        message,
-        result.error.message,
-        true
-      );
-
-      return;
-    }
-
-    currentPatient = result.data;
-
-    document.getElementById("patientEditBox")
-      .classList.add("hidden");
-
-    renderPatientDetails(currentPatient);
-
-    showMessage(
-      document.getElementById("patientMessage"),
-      "Patient details updated successfully."
-    );
-
-    await searchPatients();
-  }
-
-
-  // =========================================================
-  // LOAD VISITS
-  // =========================================================
-
-  
- async function loadVisits(patientId) {
-    const history =
-      document.getElementById("visitHistory");
-    history.innerHTML =
-      "Loading history...";
-    const result =
-      await supabaseClient
-        .from("visits")
-        .select("*")
-        .eq("patient_id", patientId)
-        .order("visit_date", {
-          ascending: false
-        });
-    if (result.error) {
-      history.innerHTML =
-        `<div class="message error">
-          ${escapeHtml(result.error.message)}
-        </div>`;
-      return;
-    }
-    const data = result.data;
-    if (!data || data.length === 0) {
-      history.innerHTML =
-        `<div class="message">
-          No previous visits found.
-        </div>`;
-      return;
-    }
-    history.innerHTML = "";
-    data.forEach(function(visit) {
-      const div =
-        document.createElement("div");
-      div.className = "visit";
-      div.innerHTML = `
-        <strong>Visit Date:</strong>
-        ${escapeHtml(visit.visit_date || "")}
-        ${
-          visit.complaints
-            ? `
-              <p>
-                <strong>Complaints:</strong><br>
-                ${formatText(visit.complaints)}
-              </p>
-            `
-            : ""
-        }
-        ${
-          visit.diagnosis
-            ? `
-              <p>
-                <strong>Diagnosis:</strong><br>
-                ${formatText(visit.diagnosis)}
-              </p>
-            `
-            : ""
-        }
-        ${
-          visit.prescription
-            ? `
-              <p>
-                <strong>Prescription:</strong><br>
-                ${formatText(visit.prescription)}
-              </p>
-            `
-            : ""
-        }
-        ${
-          visit.advice
-            ? `
-              <p>
-                <strong>Advice:</strong><br>
-                ${formatText(visit.advice)}
-              </p>
-            `
-            : ""
-        }
-        ${
-          visit.follow_up
-            ? `
-              <p>
-                <strong>Follow-up:</strong>
-                ${escapeHtml(visit.follow_up)}
-              </p>
-            `
-            : ""
-        }
-        ${
-          visit.notes
-            ? `
-              <p>
-                <strong>Notes:</strong><br>
-                ${formatText(visit.notes)}
-              </p>
-            `
-            : ""
-        }
-        <button
-          type="button"
-          class="edit-button"
-          onclick="editVisit(${visit.id})"
-        >
-          ✏️ Edit Visit
-        </button>
-        <div
-          id="editVisitBox-${visit.id}"
-          class="edit-box hidden"
-        ></div>
-      `;
-      history.appendChild(div);
-    });
-  }
-  // =========================================================
-  // ADD VISIT
-  // =========================================================
-  async function addVisit() {
-    if (!currentPatient) {
-      alert("Please select a patient first.");
-      return;
-    }
-    const visitDate =
-      document.getElementById("visitDate").value;
-    const complaints =
-      document.getElementById("complaints")
-        .value.trim();
-    const diagnosis =
-      document.getElementById("diagnosis")
-        .value.trim();
-    const prescription =
-      document.getElementById("prescription")
-        .value.trim();
-    const advice =
-      document.getElementById("advice")
-        .value.trim();
-    const followUp =
-      document.getElementById("followUp").value;
-    const notes =
-      document.getElementById("notes")
-        .value.trim();
-    const message =
-      document.getElementById("visitMessage");
-    if (!visitDate) {
-      showMessage(
-        message,
-        "Visit date is required.",
-        true
-      );
-      return;
-    }
-    const result =
-      await supabaseClient
-        .from("visits")
-        .insert([{
-          patient_id: currentPatient.id,
-          visit_date: visitDate,
-          complaints: complaints || null,
-          diagnosis: diagnosis || null,
-          prescription: prescription || null,
-          advice: advice || null,
-          follow_up: followUp || null,
-          notes: notes || null
-        }]);
-    if (result.error) {
-      showMessage(
-        message,
-        result.error.message,
-        true
-      );
-      return;
-    }
-    showMessage(
-      message,
-      "Visit saved successfully."
-    );
-    document.getElementById("complaints").value = "";
-    document.getElementById("diagnosis").value = "";
-    document.getElementById("prescription").value = "";
-    document.getElementById("advice").value = "";
-    document.getElementById("followUp").value = "";
-    document.getElementById("notes").value = "";
-    await loadVisits(currentPatient.id);
-  }
-  // =========================================================
-  // EDIT VISIT
-  // =========================================================
-  async function editVisit(visitId) {
-    const box =
-      document.getElementById(
-        "editVisitBox-" + visitId
-      );
-    if (!box) {
-      return;
-    }
-    const result =
-      await supabaseClient
-        .from("visits")
-        .select("*")
-        .eq("id", visitId)
-        .single();
-    if (result.error) {
-      alert(result.error.message);
-      return;
-    }
-    const visit = result.data;
-    box.classList.remove("hidden");
-    box.innerHTML = `
-      <h3>Edit Visit</h3>
-      <label>Visit Date</label>
-      <input
-        id="editVisitDate-${visitId}"
-        type="date"
-        value="${escapeHtml(visit.visit_date || "")}"
-      >
-      <label>Chief Complaints</label>
-      <textarea
-        id="editComplaints-${visitId}"
-      >${escapeHtml(visit.complaints || "")}</textarea>
-      <label>Diagnosis</label>
-      <textarea
-        id="editDiagnosis-${visitId}"
-      >${escapeHtml(visit.diagnosis || "")}</textarea>
-      <label>Prescription / Medicines</label>
-      <textarea
-        id="editPrescription-${visitId}"
-      >${escapeHtml(visit.prescription || "")}</textarea>
-      <label>Advice</label>
-      <textarea
-        id="editAdvice-${visitId}"
-      >${escapeHtml(visit.advice || "")}</textarea>
-      <label>Follow-up Date</label>
-      <input
-        id="editFollowUp-${visitId}"
-        type="date"
-        value="${escapeHtml(visit.follow_up || "")}"
-      >
-      <label>Notes</label>
-      <textarea
-        id="editNotes-${visitId}"
-      >${escapeHtml(visit.notes || "")}</textarea>
-      <button
-        type="button"
-        onclick="saveVisitEdit(${visitId})"
-      >
-        Save Visit Changes
-      </button>
-      <button
-        type="button"
-        class="secondary"
-        onclick="cancelVisitEdit(${visitId})"
-      >
-        Cancel
-      </button>
-      <div id="editVisitMessage-${visitId}"></div>
-    `;
-  }
-  // =========================================================
-  // CANCEL VISIT EDIT
-  // =========================================================
-  function cancelVisitEdit(visitId) {
-    const box =
-      document.getElementById(
-        "editVisitBox-" + visitId
-      );
-    if (box) {
-      box.classList.add("hidden");
-      box.innerHTML = "";
-    }
-  }
-  // =========================================================
-  // SAVE VISIT EDIT
-  // =========================================================
-  async function saveVisitEdit(visitId) {
-    const visitDate =
-      document.getElementById(
-        "editVisitDate-" + visitId
-      ).value;
-    const complaints =
-      document.getElementById(
-        "editComplaints-" + visitId
-      ).value.trim();
-    const diagnosis =
-      document.getElementById(
-        "editDiagnosis-" + visitId
-      ).value.trim();
-    const prescription =
-      document.getElementById(
-        "editPrescription-" + visitId
-      ).value.trim();
-    const advice =
-      document.getElementById(
-        "editAdvice-" + visitId
-      ).value.trim();
-    const followUp =
-      document.getElementById(
-        "editFollowUp-" + visitId
-      ).value;
-    const notes =
-      document.getElementById(
-        "editNotes-" + visitId
-      ).value.trim();
-    const message =
-      document.getElementById(
-        "editVisitMessage-" + visitId
-      );
-    if (!visitDate) {
-      showMessage(
-        message,
-        "Visit date is required.",
-        true
-      );
-      return;
-    }
-    const result =
-      await supabaseClient
-        .from("visits")
-        .update({
-          visit_date: visitDate,
-          complaints: complaints || null,
-          diagnosis: diagnosis || null,
-          prescription: prescription || null,
-          advice: advice || null,
-          follow_up: followUp || null,
-          notes: notes || null
-        })
-        .eq("id", visitId);
-    if (result.error) {
-      showMessage(
-        message,
-        result.error.message,
-        true
-      );
-      return;
-    }
-    await loadVisits(currentPatient.id);
-  }
-  // =========================================================
-  // HELPERS
-  // =========================================================
-  function showMessage(
-    element,
-    text,
-    error = false
-  ) {
-    element.innerHTML =
-      `<div class="message ${error ? "error" : ""}">
-        ${escapeHtml(text)}
-      </div>`;
-  }
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-  function formatText(value) {
-    return escapeHtml(value)
-      .replace(/\n/g, "<br>");
-  }
-  // =========================================================
-  // START
-  // =========================================================
-  checkLogin();
+/* =====================================================
+   CANCEL EDIT
+===================================================== */
+
+cancelPatientEditButton.addEventListener(
+"click",
+function() {
+
+  document
+    .getElementById("patientEditBox")
+    .classList.add("hidden");
+
+});
+
+
+/* =====================================================
+   SAVE PATIENT EDIT
+===================================================== */
+
+savePatientEditButton.addEventListener(
+"click",
+async function() {
+
+  if (!currentPatient) {
+    return;
+  }
+
+  const name =
+    document.getElementById("editName")
+    .value
+    .trim();
+
+  const age =
+    document.getElementById("editAge")
+    .value;
+
+  const gender =
+    document.getElementById("editGender")
+    .value;
+
+  const mobile =
+    document.getElementById("editMobile")
+    .value
+    .trim();
+
+  const address =
+    document.getElementById("editAddress")
+    .value
+    .trim();
+
+  const message =
+    document.getElementById("editPatientMessage");
+
+  if (!name) {
+
+    message.innerHTML =
+      '<div class="message error">Name is required.</div>';
+
+    return;
+  }
+
+  const result =
+    await supabaseClient
+    .from("patients")
+    .update({
+      name: name,
+      age: age ? parseInt(age) : null,
+      gender: gender || null,
+      mobile: mobile || null,
+      address: address || null
+    })
+    .eq("id", currentPatient.id)
+    .select()
+    .single();
+
+  if (result.error) {
+
+    message.innerHTML =
+      '<div class="message error">' +
+      escapeHtml(result.error.message) +
+      '</div>';
+
+    return;
+  }
+
+  currentPatient =
+    result.data;
+
+  displayPatient();
+
+  document
+    .getElementById("patientEditBox")
+    .classList.add("hidden");
+
+  await searchPatients();
+
+});
+
+
+/* =====================================================
+   LOAD VISITS
+===================================================== */
+
+async function loadVisits(patientId) {
+
+  const history =
+    document.getElementById("visitHistory");
+
+  history.innerHTML =
+    "Loading history...";
+
+  const result =
+    await supabaseClient
+    .from("visits")
+    .select("*")
+    .eq("patient_id", patientId)
+    .order("visit_date", {
+      ascending: false
+    });
+
+  if (result.error) {
+
+    history.innerHTML =
+      '<div class="message error">' +
+      escapeHtml(result.error.message) +
+      '</div>';
+
+    return;
+  }
+
+  if (
+    !result.data ||
+    result.data.length === 0
+  ) {
+
+    history.innerHTML =
+      '<div class="message">No previous visits found.</div>';
+
+    return;
+  }
+
+  history.innerHTML = "";
+
+  result.data.forEach(function(visit) {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "visit";
+
+    div.innerHTML =
+
+      "<strong>Visit Date:</strong> " +
+      escapeHtml(visit.visit_date || "") +
+
+      (visit.complaints
+        ? "<p><strong>Complaints:</strong><br>" +
+          formatText(visit.complaints) +
+          "</p>"
+        : "") +
+
+      (visit.diagnosis
+        ? "<p><strong>Diagnosis:</strong><br>" +
+          formatText(visit.diagnosis) +
+          "</p>"
+        : "") +
+
+      (visit.prescription
+        ? "<p><strong>Prescription:</strong><br>" +
+          formatText(visit.prescription) +
+          "</p>"
+        : "") +
+
+      (visit.advice
+        ? "<p><strong>Advice:</strong><br>" +
+          formatText(visit.advice) +
+          "</p>"
+        : "") +
+
+      (visit.follow_up
+        ? "<p><strong>Follow-up:</strong> " +
+          escapeHtml(visit.follow_up) +
+          "</p>"
+        : "") +
+
+      (visit.notes
+        ? "<p><strong>Notes:</strong><br>" +
+          formatText(visit.notes) +
+          "</p>"
+        : "");
+
+    history.appendChild(div);
+
+  });
+
+}
+
+
+/* =====================================================
+   SAVE VISIT
+===================================================== */
+
+saveVisitButton.addEventListener(
+"click",
+async function() {
+
+  if (!currentPatient) {
+
+    alert("Please select a patient first.");
+    return;
+  }
+
+  const visitDate =
+    document.getElementById("visitDate").value;
+
+  const complaints =
+    document.getElementById("complaints")
+    .value
+    .trim();
+
+  const diagnosis =
+    document.getElementById("diagnosis")
+    .value
+    .trim();
+
+  const prescription =
+    document.getElementById("prescription")
+    .value
+    .trim();
+
+  const advice =
+    document.getElementById("advice")
+    .value
+    .trim();
+
+  const followUp =
+    document.getElementById("followUp").value;
+
+  const notes =
+    document.getElementById("notes")
+    .value
+    .trim();
+
+  const message =
+    document.getElementById("visitMessage");
+
+  if (!visitDate) {
+
+    message.innerHTML =
+      '<div class="message error">Visit date is required.</div>';
+
+    return;
+  }
+
+  const result =
+    await supabaseClient
+    .from("visits")
+    .insert([{
+      patient_id: currentPatient.id,
+      visit_date: visitDate,
+      complaints: complaints || null,
+      diagnosis: diagnosis || null,
+      prescription: prescription || null,
+      advice: advice || null,
+      follow_up: followUp || null,
+      notes: notes || null
+    }]);
+
+  if (result.error) {
+
+    message.innerHTML =
+      '<div class="message error">' +
+      escapeHtml(result.error.message) +
+      '</div>';
+
+    return;
+  }
+
+  message.innerHTML =
+    '<div class="message">Visit saved successfully.</div>';
+
+  document.getElementById("complaints").value = "";
+  document.getElementById("diagnosis").value = "";
+  document.getElementById("prescription").value = "";
+  document.getElementById("advice").value = "";
+  document.getElementById("followUp").value = "";
+  document.getElementById("notes").value = "";
+
+  await loadVisits(currentPatient.id);
+
+});
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+function formatText(value) {
+
+  return escapeHtml(value)
+    .replace(/\n/g,"<br>");
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+checkLogin();
+
 </script>
+
 </body>
 </html>
