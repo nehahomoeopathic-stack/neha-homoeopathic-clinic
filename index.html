@@ -1,1842 +1,1888 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>NEHA HOMOEOPATHIC CLINIC</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f7f6;color:#222}
-header{background:#176b4d;color:#fff;padding:18px;text-align:center}
-header h1{margin:0;font-size:24px}
-header p{margin:5px 0 0}
-.container{max-width:1150px;margin:auto;padding:15px}
-.card{background:#fff;padding:18px;margin-bottom:18px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-h2,h3{color:#176b4d}
-input,textarea,select,button{width:100%;padding:11px;margin-top:7px;margin-bottom:12px;border:1px solid #ccc;border-radius:7px;font-size:15px}
-textarea{min-height:90px;resize:vertical}
-button{background:#176b4d;color:#fff;border:0;cursor:pointer;font-weight:bold}
-button:hover{opacity:.9}
-.secondary{background:#555}
-.blue{background:#2563eb}
-.orange{background:#b45309}
-.red{background:#c62828}
-.hidden{display:none!important}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.topbar button{width:auto}
-.message{padding:10px;border-radius:7px;margin-bottom:12px;background:#eef7f2}
-.error{background:#ffe9e7;color:#9b1c1c}
-.patient-result{padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:8px;cursor:pointer;background:#fafafa}
-.patient-result:hover{background:#eef7f2}
-.visit{border-left:4px solid #176b4d;padding:12px;margin-bottom:12px;background:#f8faf9;border-radius:6px}
-.visit-buttons{display:flex;gap:8px;margin-top:12px}
-.visit-buttons button{width:auto;margin:0;padding:8px 14px}
-.edit-box{background:#f1f7f4;padding:15px;border-radius:8px;margin-top:10px}
-.dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.stat{background:#eef7f2;border:1px solid #d4e8df;border-radius:10px;padding:15px;text-align:center}
-.stat strong{display:block;font-size:28px;color:#176b4d;margin-top:5px}
-.action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.export-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.small{font-size:13px;color:#666}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:15px;z-index:1000}
-.modal-content{background:#fff;width:min(700px,100%);max-height:90vh;overflow:auto;border-radius:12px;padding:20px}
-.modal-buttons{display:flex;gap:10px}
-.modal-buttons button{flex:1}
-@media(max-width:700px){
-.grid,.dashboard,.action-grid,.export-grid{grid-template-columns:1fr}
-.topbar{flex-direction:column;align-items:stretch}
-.topbar button{width:100%}
-.visit-buttons{flex-direction:column}
-.visit-buttons button{width:100%}
-}
-</style>
-</head>
-
-<body>
-
-<header>
-<h1>NEHA HOMOEOPATHIC CLINIC</h1>
-<p>Patient Management System</p>
-</header>
-
-<div class="container">
-
-<!-- LOGIN -->
-<div id="loginSection" class="card">
-<h2>Clinic Login</h2>
-
-<input id="loginEmail" type="email" placeholder="Email address">
-<input id="loginPassword" type="password" placeholder="Password">
-
-<button id="loginButton">Login</button>
-
-<div id="loginMessage"></div>
-</div>
-
-
-<!-- APPLICATION -->
-<div id="appSection" class="hidden">
-
-<!-- DASHBOARD -->
-<div class="card">
-<div class="topbar">
-<strong>Clinic Dashboard</strong>
-<button id="logoutButton" class="secondary">Logout</button>
-</div>
-</div>
-
-
-<!-- TODAY -->
-<div class="card">
-
-<h2>Today's Report - <span id="todayText"></span></h2>
-
-<div class="dashboard">
-
-<div class="stat">
-Patients Today
-<strong id="todayPatients">0</strong>
-</div>
-
-<div class="stat">
-Total Payment
-<strong id="todayPayment">₹0</strong>
-</div>
-
-<div class="stat">
-Date
-<strong id="todayDate">-</strong>
-</div>
-
-</div>
-
-<button id="printTodayButton" class="blue">
-🖨️ Print Today's Report
-</button>
-
-</div>
-
-
-<!-- MONTHLY BACKUP -->
-<div class="card">
-
-<h2>Monthly Backup</h2>
-
-<p class="small">
-Download your clinic records every month to keep a backup.
-</p>
-
-<div class="export-grid">
-
-<div>
-<label>Month</label>
-<select id="backupMonth"></select>
-</div>
-
-<div>
-<label>Year</label>
-<select id="backupYear"></select>
-</div>
-
-</div>
-
-<button id="monthlyPdfButton" class="orange">
-📄 Monthly PDF / Print
-</button>
-
-<button id="monthlyTextButton" class="secondary">
-📝 Monthly Text Backup
-</button>
-
-<div id="backupMessage"></div>
-
-</div>
-
-
-<!-- ADD PATIENT -->
-<div class="card">
-
-<h2>Add New Patient</h2>
-
-<div class="grid">
-
-<div>
-<label>Name *</label>
-<input id="patientName" placeholder="Patient name">
-</div>
-
-<div>
-<label>Age</label>
-<input id="patientAge" type="number" placeholder="Age">
-</div>
-
-<div>
-<label>Gender</label>
-<select id="patientGender">
-<option value="">Select</option>
-<option value="Male">Male</option>
-<option value="Female">Female</option>
-<option value="Other">Other</option>
-</select>
-</div>
-
-<div>
-<label>Mobile</label>
-<input id="patientMobile" type="tel" placeholder="Mobile number">
-</div>
-
-</div>
-
-<label>Address</label>
-<textarea id="patientAddress" placeholder="Address"></textarea>
-
-<button id="savePatientButton">Save Patient</button>
-
-<div id="patientMessage"></div>
-
-</div>
-
-
-<!-- SEARCH -->
-<div class="card">
-
-<h2>Search Patient</h2>
-
-<input id="searchBox" placeholder="Search by name or mobile">
-
-<div id="searchResults"></div>
-
-</div>
-
-
-<!-- PATIENT PROFILE -->
-<div id="patientSection" class="card hidden">
-
-<h2>Patient Profile</h2>
-
-<div id="patientDetails"></div>
-
-<div class="action-grid">
-
-<button id="editPatientButton">
-✏️ Edit Patient
-</button>
-
-<button id="printPatientButton" class="blue">
-🖨️ Print Complete Record
-</button>
-
-</div>
-
-
-<!-- PATIENT EDIT -->
-<div id="patientEditBox" class="edit-box hidden">
-
-<h3>Edit Patient</h3>
-
-<label>Name</label>
-<input id="editName">
-
-<label>Age</label>
-<input id="editAge" type="number">
-
-<label>Gender</label>
-<select id="editGender">
-<option value="">Select</option>
-<option value="Male">Male</option>
-<option value="Female">Female</option>
-<option value="Other">Other</option>
-</select>
-
-<label>Mobile</label>
-<input id="editMobile">
-
-<label>Address</label>
-<textarea id="editAddress"></textarea>
-
-<button id="savePatientEditButton">Save Changes</button>
-
-<button id="cancelPatientEditButton" class="secondary">
-Cancel
-</button>
-
-<div id="editPatientMessage"></div>
-
-</div>
-
-
-<hr>
-
-<h2>Visit History</h2>
-
-<div id="visitHistory"></div>
-
-
-<hr>
-
-
-<!-- ADD VISIT -->
-<h2>Add New Visit</h2>
-
-<label>Visit Date</label>
-<input id="visitDate" type="date">
-
-<label>Chief Complaints</label>
-<textarea id="complaints"></textarea>
-
-<label>Diagnosis</label>
-<textarea id="diagnosis"></textarea>
-
-<label>Prescription / Medicines</label>
-<textarea id="prescription"></textarea>
-
-<label>Advice</label>
-<textarea id="advice"></textarea>
-
-<label>Follow-up Date</label>
-<input id="followUp" type="date">
-
-<label>Fee Payment (₹)</label>
-<input id="feePayment" type="number" min="0" step="0.01" placeholder="Enter amount">
-
-<button id="saveVisitButton">Save Visit</button>
-
-<div id="visitMessage"></div>
-
-</div>
-
-</div>
-
-
-<!-- EDIT VISIT -->
-<div id="visitModal" class="modal hidden">
-
-<div class="modal-content">
-
-<h2>Edit Visit</h2>
-
-<input id="editVisitId" type="hidden">
-
-<label>Visit Date</label>
-<input id="editVisitDate" type="date">
-
-<label>Chief Complaints</label>
-<textarea id="editComplaints"></textarea>
-
-<label>Diagnosis</label>
-<textarea id="editDiagnosis"></textarea>
-
-<label>Prescription / Medicines</label>
-<textarea id="editPrescription"></textarea>
-
-<label>Advice</label>
-<textarea id="editAdvice"></textarea>
-
-<label>Follow-up Date</label>
-<input id="editFollowUp" type="date">
-
-<label>Fee Payment (₹)</label>
-<input id="editFeePayment" type="number" min="0" step="0.01">
-
-<div id="editVisitMessage"></div>
-
-<div class="modal-buttons">
-
-<button id="saveEditedVisitButton">
-Save Changes
-</button>
-
-<button id="cancelVisitEditButton" class="secondary">
-Cancel
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-
-<script>
-
 /* =========================================================
-SUPABASE
+   NEHA HOMOEOPATHIC CLINIC
+   FRESH JAVASCRIPT
 ========================================================= */
 
 const SUPABASE_URL =
-"https://snoyzbsnbhjxzemuoewe.supabase.co;
+  "https://snoyzbsnbhjxzemuoewe.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
-"sb_publishable_HzdRFn56iEpMrCjEUGPong_nFXvo4IU;
+  "sb_publishable_HzdRFn56iEpMrCjEUGPong_nFXvo4IU";
 
-const supabaseClient =
-window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_PUBLISHABLE_KEY
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+let currentPatient = null;
+let currentVisits = [];
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatText(value) {
+  return escapeHtml(value).replace(/\n/g, "<br>");
+}
+
+function localDate() {
+  const d = new Date();
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  return y + "-" + m + "-" + day;
+}
+
+function shortDate(value) {
+
+  if (!value) return "";
+
+  const parts = String(value).substring(0, 10).split("-");
+
+  if (parts.length !== 3) return value;
+
+  const months = [
+    "JAN", "FEB", "MAR", "APR",
+    "MAY", "JUN", "JUL", "AUG",
+    "SEP", "OCT", "NOV", "DEC"
+  ];
+
+  return (
+    parts[2] +
+    " " +
+    months[parseInt(parts[1], 10) - 1] +
+    " " +
+    parts[0]
+  );
+}
+
+function money(value) {
+
+  return "₹" +
+    Number(value || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+$("loginButton").addEventListener("click", async function () {
+
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  $("loginMessage").innerHTML = "";
+
+  if (!email || !password) {
+
+    $("loginMessage").innerHTML =
+      '<div class="message error">' +
+      "Enter email and password." +
+      "</div>";
+
+    return;
+  }
+
+  $("loginButton").disabled = true;
+  $("loginButton").innerText = "Logging in...";
+
+  try {
+
+    const result =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+    if (result.error) {
+
+      $("loginMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(result.error.message) +
+        "</div>";
+
+      return;
+    }
+
+    showApp();
+
+  } catch (error) {
+
+    $("loginMessage").innerHTML =
+      '<div class="message error">' +
+      escapeHtml(error.message) +
+      "</div>";
+
+  } finally {
+
+    $("loginButton").disabled = false;
+    $("loginButton").innerText = "Login";
+
+  }
+
+});
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+$("logoutButton").addEventListener("click", async function () {
+
+  await supabaseClient.auth.signOut();
+
+  currentPatient = null;
+  currentVisits = [];
+
+  $("appSection").classList.add("hidden");
+  $("loginSection").classList.remove("hidden");
+
+});
+
+
+/* =========================================================
+   SHOW APPLICATION
+========================================================= */
+
+function showApp() {
+
+  $("loginSection").classList.add("hidden");
+  $("appSection").classList.remove("hidden");
+
+  $("visitDate").value = localDate();
+
+  if ($("todayText")) {
+    $("todayText").innerText = shortDate(localDate());
+  }
+
+  if ($("todayDate")) {
+    $("todayDate").innerText = shortDate(localDate());
+  }
+
+  setupBackup();
+
+  loadTodayReport();
+
+}
+
+
+/* =========================================================
+   CHECK LOGIN
+========================================================= */
+
+async function checkLogin() {
+
+  try {
+
+    const result =
+      await supabaseClient.auth.getSession();
+
+    if (
+      result.data &&
+      result.data.session
+    ) {
+
+      showApp();
+
+    }
+
+  } catch (error) {
+
+    console.error("Login check error:", error);
+
+  }
+
+}
+
+
+/* =========================================================
+   TODAY'S REPORT
+========================================================= */
+
+async function loadTodayReport() {
+
+  const today = localDate();
+
+  const result =
+    await supabaseClient
+      .from("visits")
+      .select("id, patient_id, fee_payment")
+      .eq("visit_date", today);
+
+  if (result.error) {
+
+    console.error(result.error);
+    return;
+
+  }
+
+  const visits = result.data || [];
+
+  let total = 0;
+
+  visits.forEach(function (visit) {
+
+    total += Number(visit.fee_payment || 0);
+
+  });
+
+  if ($("todayPatients")) {
+    $("todayPatients").innerText = visits.length;
+  }
+
+  if ($("todayPayment")) {
+    $("todayPayment").innerText = money(total);
+  }
+
+}
+
+
+/* =========================================================
+   SAVE PATIENT
+========================================================= */
+
+$("savePatientButton").addEventListener(
+  "click",
+  async function () {
+
+    const name = $("patientName").value.trim();
+    const age = $("patientAge").value;
+    const gender = $("patientGender").value;
+    const mobile = $("patientMobile").value.trim();
+    const address = $("patientAddress").value.trim();
+
+    $("patientMessage").innerHTML = "";
+
+    if (!name) {
+
+      $("patientMessage").innerHTML =
+        '<div class="message error">' +
+        "Patient name is required." +
+        "</div>";
+
+      return;
+    }
+
+    const result =
+      await supabaseClient
+        .from("patients")
+        .insert([
+          {
+            name: name,
+            age: age ? parseInt(age, 10) : null,
+            gender: gender || null,
+            mobile: mobile || null,
+            address: address || null
+          }
+        ])
+        .select()
+        .single();
+
+    if (result.error) {
+
+      $("patientMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(result.error.message) +
+        "</div>";
+
+      return;
+    }
+
+    $("patientMessage").innerHTML =
+      '<div class="message">' +
+      "Patient saved successfully. Patient ID: " +
+      escapeHtml(result.data.id) +
+      "</div>";
+
+    $("patientName").value = "";
+    $("patientAge").value = "";
+    $("patientGender").value = "";
+    $("patientMobile").value = "";
+    $("patientAddress").value = "";
+
+    await openPatient(result.data.id);
+
+  }
 );
 
 
 /* =========================================================
-GLOBAL
+   PATIENT SEARCH
 ========================================================= */
 
-let currentPatient=null;
-let currentVisits=[];
+let searchTimer = null;
 
+$("searchBox").addEventListener(
+  "input",
+  function () {
 
-/* =========================================================
-HELPERS
-========================================================= */
+    clearTimeout(searchTimer);
 
-function escapeHtml(value){
+    searchTimer = setTimeout(
+      searchPatients,
+      300
+    );
 
-return String(value ?? "")
-.replace(/&/g,"&amp;")
-.replace(/</g,"&lt;")
-.replace(/>/g,"&gt;")
-.replace(/"/g,"&quot;")
-.replace(/'/g,"&#039;");
+  }
+);
 
-}
 
+async function searchPatients() {
 
-function formatText(value){
+  const search = $("searchBox").value.trim();
 
-return escapeHtml(value).replace(/\n/g,"<br>");
+  $("searchResults").innerHTML = "";
 
-}
+  if (!search) return;
 
+  const result =
+    await supabaseClient
+      .from("patients")
+      .select("*")
+      .or(
+        "name.ilike.%" +
+        search +
+        "%,mobile.ilike.%" +
+        search +
+        "%"
+      )
+      .order("name");
 
-function getLocalDate(){
+  if (result.error) {
 
-const d=new Date();
+    $("searchResults").innerHTML =
+      '<div class="message error">' +
+      escapeHtml(result.error.message) +
+      "</div>";
 
-const year=d.getFullYear();
+    return;
+  }
 
-const month=String(d.getMonth()+1).padStart(2,"0");
+  if (!result.data || result.data.length === 0) {
 
-const day=String(d.getDate()).padStart(2,"0");
+    $("searchResults").innerHTML =
+      '<div class="message">' +
+      "No patient found." +
+      "</div>";
 
-return `${year}-${month}-${day}`;
+    return;
+  }
 
-}
+  result.data.forEach(function (patient) {
 
+    const div = document.createElement("div");
 
-function shortDate(date){
+    div.className = "patient-result";
 
-if(!date)return "";
+    div.innerHTML =
+      "<strong>" +
+      escapeHtml(patient.name) +
+      "</strong><br>" +
 
-const p=String(date).substring(0,10).split("-");
+      "Patient ID: " +
+      escapeHtml(patient.id) +
+      "<br>" +
 
-if(p.length!==3)return date;
+      (
+        patient.age
+          ? "Age: " + escapeHtml(patient.age) + "<br>"
+          : ""
+      ) +
 
-const months=[
-"JAN","FEB","MAR","APR","MAY","JUN",
-"JUL","AUG","SEP","OCT","NOV","DEC"
-];
+      (
+        patient.gender
+          ? "Gender: " +
+            escapeHtml(patient.gender) +
+            "<br>"
+          : ""
+      ) +
 
-return `${p[2]} ${months[Number(p[1])-1]} ${p[0]}`;
+      (
+        patient.mobile
+          ? "Mobile: " +
+            escapeHtml(patient.mobile)
+          : ""
+      );
 
-}
+    div.addEventListener(
+      "click",
+      function () {
 
+        openPatient(patient.id);
 
-function money(value){
+      }
+    );
 
-return "₹"+Number(value||0).toLocaleString("en-IN",{
-minimumFractionDigits:0,
-maximumFractionDigits:2
-});
+    $("searchResults").appendChild(div);
 
-}
-
-
-/* =========================================================
-LOGIN
-========================================================= */
-
-document.getElementById("loginButton")
-.addEventListener("click",async()=>{
-
-const email=
-document.getElementById("loginEmail").value.trim();
-
-const password=
-document.getElementById("loginPassword").value;
-
-const message=
-document.getElementById("loginMessage");
-
-message.innerHTML="";
-
-if(!email||!password){
-
-message.innerHTML=
-'<div class="message error">Enter email and password.</div>';
-
-return;
-}
-
-const button=
-document.getElementById("loginButton");
-
-button.disabled=true;
-button.innerText="Logging in...";
-
-try{
-
-const {data,error}=
-await supabaseClient.auth.signInWithPassword({
-email,
-password
-});
-
-if(error){
-
-message.innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
-
-return;
-}
-
-showApp();
-
-}catch(error){
-
-message.innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
-
-}finally{
-
-button.disabled=false;
-button.innerText="Login";
-
-}
-
-});
-
-
-/* =========================================================
-LOGOUT
-========================================================= */
-
-document.getElementById("logoutButton")
-.addEventListener("click",async()=>{
-
-await supabaseClient.auth.signOut();
-
-currentPatient=null;
-currentVisits=[];
-
-document.getElementById("appSection")
-.classList.add("hidden");
-
-document.getElementById("loginSection")
-.classList.remove("hidden");
-
-});
-
-
-/* =========================================================
-SHOW APP
-========================================================= */
-
-function showApp(){
-
-document.getElementById("loginSection")
-.classList.add("hidden");
-
-document.getElementById("appSection")
-.classList.remove("hidden");
-
-const today=getLocalDate();
-
-document.getElementById("visitDate").value=today;
-
-document.getElementById("todayText").innerText=shortDate(today);
-
-document.getElementById("todayDate").innerText=shortDate(today);
-
-setupBackup();
-
-loadTodayReport();
+  });
 
 }
 
 
 /* =========================================================
-CHECK LOGIN
+   OPEN PATIENT
 ========================================================= */
 
-async function checkLogin(){
+async function openPatient(patientId) {
 
-const {data}=await supabaseClient.auth.getSession();
+  const result =
+    await supabaseClient
+      .from("patients")
+      .select("*")
+      .eq("id", patientId)
+      .single();
 
-if(data && data.session){
+  if (result.error) {
 
-showApp();
+    alert(result.error.message);
+    return;
 
-}
+  }
+
+  currentPatient = result.data;
+
+  $("patientSection").classList.remove("hidden");
+
+  displayPatient();
+
+  await loadVisits(patientId);
+
+  $("patientSection").scrollIntoView({
+    behavior: "smooth"
+  });
 
 }
 
 
 /* =========================================================
-TODAY REPORT
+   DISPLAY PATIENT
 ========================================================= */
 
-async function loadTodayReport(){
+function displayPatient() {
 
-const today=getLocalDate();
+  const p = currentPatient;
 
-const {data,error}=
-await supabaseClient
-.from("visits")
-.select("id,patient_id,fee_payment")
-.eq("visit_date",today);
+  $("patientDetails").innerHTML =
 
-if(error){
+    "<p><strong>Patient ID:</strong> " +
+    escapeHtml(p.id) +
+    "</p>" +
 
-console.error(error);
-return;
+    "<p><strong>Name:</strong> " +
+    escapeHtml(p.name) +
+    "</p>" +
 
-}
+    "<p><strong>Age:</strong> " +
+    escapeHtml(p.age || "") +
+    "</p>" +
 
-const visits=data||[];
+    "<p><strong>Gender:</strong> " +
+    escapeHtml(p.gender || "") +
+    "</p>" +
 
-let total=0;
+    "<p><strong>Mobile:</strong> " +
+    escapeHtml(p.mobile || "") +
+    "</p>" +
 
-visits.forEach(v=>{
-total+=Number(v.fee_payment||0);
-});
-
-document.getElementById("todayPatients")
-.innerText=visits.length;
-
-document.getElementById("todayPayment")
-.innerText=money(total);
+    "<p><strong>Address:</strong><br>" +
+    formatText(p.address || "") +
+    "</p>";
 
 }
 
 
 /* =========================================================
-SAVE PATIENT
+   EDIT PATIENT
 ========================================================= */
 
-document.getElementById("savePatientButton")
-.addEventListener("click",async()=>{
+$("editPatientButton").addEventListener(
+  "click",
+  function () {
 
-const name=
-document.getElementById("patientName").value.trim();
+    if (!currentPatient) return;
 
-const age=
-document.getElementById("patientAge").value;
+    $("editName").value =
+      currentPatient.name || "";
 
-const gender=
-document.getElementById("patientGender").value;
+    $("editAge").value =
+      currentPatient.age || "";
 
-const mobile=
-document.getElementById("patientMobile").value.trim();
+    $("editGender").value =
+      currentPatient.gender || "";
 
-const address=
-document.getElementById("patientAddress").value.trim();
+    $("editMobile").value =
+      currentPatient.mobile || "";
 
-const message=
-document.getElementById("patientMessage");
+    $("editAddress").value =
+      currentPatient.address || "";
 
-message.innerHTML="";
+    $("patientEditBox")
+      .classList
+      .remove("hidden");
 
-if(!name){
+  }
+);
 
-message.innerHTML=
-'<div class="message error">Patient name is required.</div>';
 
-return;
-}
+$("cancelPatientEditButton").addEventListener(
+  "click",
+  function () {
 
-const {data,error}=
-await supabaseClient
-.from("patients")
-.insert([{
-name:name,
-age:age?parseInt(age):null,
-gender:gender||null,
-mobile:mobile||null,
-address:address||null
-}])
-.select()
-.single();
+    $("patientEditBox")
+      .classList
+      .add("hidden");
 
-if(error){
+  }
+);
 
-message.innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
 
-return;
-}
+$("savePatientEditButton").addEventListener(
+  "click",
+  async function () {
 
-message.innerHTML=
-'<div class="message">Patient saved successfully. Patient ID: '+
-escapeHtml(data.id)+
-'</div>';
+    if (!currentPatient) return;
 
-document.getElementById("patientName").value="";
-document.getElementById("patientAge").value="";
-document.getElementById("patientGender").value="";
-document.getElementById("patientMobile").value="";
-document.getElementById("patientAddress").value="";
+    const name =
+      $("editName").value.trim();
 
-openPatient(data.id);
+    if (!name) {
 
-});
+      $("editPatientMessage").innerHTML =
+        '<div class="message error">' +
+        "Name is required." +
+        "</div>";
+
+      return;
+    }
+
+    const result =
+      await supabaseClient
+        .from("patients")
+        .update({
+          name: name,
+          age: $("editAge").value
+            ? parseInt($("editAge").value, 10)
+            : null,
+          gender:
+            $("editGender").value || null,
+          mobile:
+            $("editMobile").value.trim() || null,
+          address:
+            $("editAddress").value.trim() || null
+        })
+        .eq("id", currentPatient.id)
+        .select()
+        .single();
+
+    if (result.error) {
+
+      $("editPatientMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(result.error.message) +
+        "</div>";
+
+      return;
+    }
+
+    currentPatient = result.data;
+
+    displayPatient();
+
+    $("patientEditBox")
+      .classList
+      .add("hidden");
+
+    await searchPatients();
+
+  }
+);
 
 
 /* =========================================================
-SEARCH
+   LOAD VISITS
 ========================================================= */
 
-let searchTimer;
+async function loadVisits(patientId) {
 
-document.getElementById("searchBox")
-.addEventListener("input",()=>{
+  $("visitHistory").innerHTML =
+    "Loading visit history...";
 
-clearTimeout(searchTimer);
+  const result =
+    await supabaseClient
+      .from("visits")
+      .select("*")
+      .eq("patient_id", patientId)
+      .order("visit_date", {
+        ascending: false
+      });
 
-searchTimer=setTimeout(searchPatients,300);
+  if (result.error) {
 
-});
+    $("visitHistory").innerHTML =
+      '<div class="message error">' +
+      escapeHtml(result.error.message) +
+      "</div>";
 
+    return;
 
-async function searchPatients(){
+  }
 
-const search=
-document.getElementById("searchBox").value.trim();
+  currentVisits = result.data || [];
 
-const results=
-document.getElementById("searchResults");
+  $("visitHistory").innerHTML = "";
 
-results.innerHTML="";
+  if (currentVisits.length === 0) {
 
-if(!search)return;
+    $("visitHistory").innerHTML =
+      '<div class="message">' +
+      "No previous visits found." +
+      "</div>";
 
-const {data,error}=
-await supabaseClient
-.from("patients")
-.select("*")
-.or(
-"name.ilike.%"+search+"%,mobile.ilike.%"+search+"%"
-)
-.order("name");
+    return;
+  }
 
-if(error){
+  currentVisits.forEach(function (visit) {
 
-results.innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
+    const div =
+      document.createElement("div");
 
-return;
-}
+    div.className = "visit";
 
-if(!data||data.length===0){
+    let html =
 
-results.innerHTML=
-'<div class="message">No patient found.</div>';
+      "<strong>Visit Date:</strong> " +
+      shortDate(visit.visit_date);
 
-return;
-}
+    if (visit.complaints) {
 
-data.forEach(patient=>{
+      html +=
+        "<p><strong>Chief Complaints:</strong><br>" +
+        formatText(visit.complaints) +
+        "</p>";
 
-const div=document.createElement("div");
+    }
 
-div.className="patient-result";
+    if (visit.diagnosis) {
 
-div.innerHTML=
-"<strong>"+escapeHtml(patient.name)+"</strong><br>"+
-"Patient ID: "+escapeHtml(patient.id)+"<br>"+
-(patient.age?"Age: "+patient.age+"<br>":"")+
-(patient.gender?
-"Gender: "+escapeHtml(patient.gender)+"<br>":"")+
-(patient.mobile?
-"Mobile: "+escapeHtml(patient.mobile):"");
+      html +=
+        "<p><strong>Diagnosis:</strong><br>" +
+        formatText(visit.diagnosis) +
+        "</p>";
 
-div.addEventListener("click",()=>{
-openPatient(patient.id);
-});
+    }
 
-results.appendChild(div);
+    if (visit.prescription) {
 
-});
+      html +=
+        "<p><strong>Prescription / Medicines:</strong><br>" +
+        formatText(visit.prescription) +
+        "</p>";
 
-}
+    }
 
+    if (visit.advice) {
 
-/* =========================================================
-OPEN PATIENT
-========================================================= */
+      html +=
+        "<p><strong>Advice:</strong><br>" +
+        formatText(visit.advice) +
+        "</p>";
 
-async function openPatient(patientId){
+    }
 
-const {data,error}=
-await supabaseClient
-.from("patients")
-.select("*")
-.eq("id",patientId)
-.single();
+    if (visit.follow_up) {
 
-if(error){
+      html +=
+        "<p><strong>Follow-up Date:</strong> " +
+        shortDate(visit.follow_up) +
+        "</p>";
 
-alert(error.message);
-return;
-}
+    }
 
-currentPatient=data;
+    html +=
+      "<p><strong>Fee Payment:</strong> " +
+      money(visit.fee_payment) +
+      "</p>";
 
-document.getElementById("patientSection")
-.classList.remove("hidden");
+    html +=
+      '<div class="visit-buttons">' +
 
-displayPatient();
+      '<button type="button" onclick="editVisit(\'' +
+      visit.id +
+      '\')">✏️ Edit</button>' +
 
-await loadVisits(patientId);
+      '<button type="button" class="red" onclick="deleteVisit(\'' +
+      visit.id +
+      '\')">🗑️ Delete</button>' +
 
-document.getElementById("patientSection")
-.scrollIntoView({
-behavior:"smooth"
-});
+      "</div>";
 
-}
+    div.innerHTML = html;
 
+    $("visitHistory").appendChild(div);
 
-/* =========================================================
-DISPLAY PATIENT
-========================================================= */
-
-function displayPatient(){
-
-const p=currentPatient;
-
-document.getElementById("patientDetails").innerHTML=
-
-"<p><strong>Patient ID:</strong> "+
-escapeHtml(p.id)+"</p>"+
-
-"<p><strong>Name:</strong> "+
-escapeHtml(p.name)+"</p>"+
-
-"<p><strong>Age:</strong> "+
-escapeHtml(p.age??"")+"</p>"+
-
-"<p><strong>Gender:</strong> "+
-escapeHtml(p.gender??"")+"</p>"+
-
-"<p><strong>Mobile:</strong> "+
-escapeHtml(p.mobile??"")+"</p>"+
-
-"<p><strong>Address:</strong><br>"+
-formatText(p.address??"")+
-"</p>";
-
-}
-
-
-/* =========================================================
-EDIT PATIENT
-========================================================= */
-
-document.getElementById("editPatientButton")
-.addEventListener("click",()=>{
-
-if(!currentPatient)return;
-
-document.getElementById("editName").value=
-currentPatient.name||"";
-
-document.getElementById("editAge").value=
-currentPatient.age??"";
-
-document.getElementById("editGender").value=
-currentPatient.gender||"";
-
-document.getElementById("editMobile").value=
-currentPatient.mobile||"";
-
-document.getElementById("editAddress").value=
-currentPatient.address||"";
-
-document.getElementById("patientEditBox")
-.classList.remove("hidden");
-
-});
-
-
-document.getElementById("cancelPatientEditButton")
-.addEventListener("click",()=>{
-
-document.getElementById("patientEditBox")
-.classList.add("hidden");
-
-});
-
-
-document.getElementById("savePatientEditButton")
-.addEventListener("click",async()=>{
-
-if(!currentPatient)return;
-
-const name=
-document.getElementById("editName").value.trim();
-
-if(!name){
-
-alert("Name is required.");
-return;
-
-}
-
-const {data,error}=
-await supabaseClient
-.from("patients")
-.update({
-name:name,
-age:document.getElementById("editAge").value
-?parseInt(document.getElementById("editAge").value)
-:null,
-gender:document.getElementById("editGender").value||null,
-mobile:document.getElementById("editMobile").value.trim()||null,
-address:document.getElementById("editAddress").value.trim()||null
-})
-.eq("id",currentPatient.id)
-.select()
-.single();
-
-if(error){
-
-document.getElementById("editPatientMessage").innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
-
-return;
-}
-
-currentPatient=data;
-
-displayPatient();
-
-document.getElementById("patientEditBox")
-.classList.add("hidden");
-
-});
-
-
-/* =========================================================
-LOAD VISITS
-========================================================= */
-
-async function loadVisits(patientId){
-
-const history=
-document.getElementById("visitHistory");
-
-history.innerHTML="Loading visit history...";
-
-const {data,error}=
-await supabaseClient
-.from("visits")
-.select("*")
-.eq("patient_id",patientId)
-.order("visit_date",{ascending:false});
-
-if(error){
-
-history.innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
-
-return;
-}
-
-currentVisits=data||[];
-
-history.innerHTML="";
-
-if(currentVisits.length===0){
-
-history.innerHTML=
-'<div class="message">No previous visits found.</div>';
-
-return;
-}
-
-currentVisits.forEach(visit=>{
-
-const div=document.createElement("div");
-
-div.className="visit";
-
-let html=
-"<strong>Visit Date:</strong> "+
-shortDate(visit.visit_date);
-
-if(visit.complaints){
-
-html+=
-"<p><strong>Chief Complaints:</strong><br>"+
-formatText(visit.complaints)+
-"</p>";
-
-}
-
-if(visit.diagnosis){
-
-html+=
-"<p><strong>Diagnosis:</strong><br>"+
-formatText(visit.diagnosis)+
-"</p>";
-
-}
-
-if(visit.prescription){
-
-html+=
-"<p><strong>Prescription / Medicines:</strong><br>"+
-formatText(visit.prescription)+
-"</p>";
-
-}
-
-if(visit.advice){
-
-html+=
-"<p><strong>Advice:</strong><br>"+
-formatText(visit.advice)+
-"</p>";
-
-}
-
-if(visit.follow_up){
-
-html+=
-"<p><strong>Follow-up Date:</strong> "+
-shortDate(visit.follow_up)+
-"</p>";
-
-}
-
-html+=
-"<p><strong>Fee Payment:</strong> "+
-money(visit.fee_payment)+
-"</p>";
-
-html+=
-'<div class="visit-buttons">'+
-'<button onclick="editVisit(\''+visit.id+'\')">✏️ Edit</button>'+
-'<button class="red" onclick="deleteVisit(\''+visit.id+'\')">🗑️ Delete</button>'+
-'</div>';
-
-div.innerHTML=html;
-
-history.appendChild(div);
-
-});
+  });
 
 }
 
 
 /* =========================================================
-SAVE VISIT
+   SAVE VISIT
 ========================================================= */
 
-document.getElementById("saveVisitButton")
-.addEventListener("click",async()=>{
+$("saveVisitButton").addEventListener(
+  "click",
+  async function () {
 
-if(!currentPatient){
+    if (!currentPatient) {
 
-alert("Please select a patient first.");
-return;
+      alert("Please select a patient first.");
+      return;
 
-}
+    }
 
-const visitDate=
-document.getElementById("visitDate").value;
+    const visitDate =
+      $("visitDate").value;
 
-if(!visitDate){
+    if (!visitDate) {
 
-alert("Visit date is required.");
-return;
+      alert("Visit date is required.");
+      return;
 
-}
+    }
 
-const fee=
-document.getElementById("feePayment").value;
+    const fee =
+      $("feePayment").value;
 
-const {error}=
-await supabaseClient
-.from("visits")
-.insert([{
-patient_id:currentPatient.id,
-visit_date:visitDate,
-complaints:document.getElementById("complaints").value.trim()||null,
-diagnosis:document.getElementById("diagnosis").value.trim()||null,
-prescription:document.getElementById("prescription").value.trim()||null,
-advice:document.getElementById("advice").value.trim()||null,
-follow_up:document.getElementById("followUp").value||null,
-fee_payment:fee?Number(fee):0
-}]);
+    const result =
+      await supabaseClient
+        .from("visits")
+        .insert([
+          {
+            patient_id: currentPatient.id,
+            visit_date: visitDate,
+            complaints:
+              $("complaints").value.trim() || null,
+            diagnosis:
+              $("diagnosis").value.trim() || null,
+            prescription:
+              $("prescription").value.trim() || null,
+            advice:
+              $("advice").value.trim() || null,
+            follow_up:
+              $("followUp").value || null,
+            fee_payment:
+              fee ? Number(fee) : 0
+          }
+        ]);
 
-if(error){
+    if (result.error) {
 
-document.getElementById("visitMessage").innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
+      $("visitMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(result.error.message) +
+        "</div>";
 
-return;
-}
+      return;
+    }
 
-document.getElementById("visitMessage").innerHTML=
-'<div class="message">Visit saved successfully.</div>';
+    $("visitMessage").innerHTML =
+      '<div class="message">' +
+      "Visit saved successfully." +
+      "</div>";
 
-document.getElementById("complaints").value="";
-document.getElementById("diagnosis").value="";
-document.getElementById("prescription").value="";
-document.getElementById("advice").value="";
-document.getElementById("followUp").value="";
-document.getElementById("feePayment").value="";
+    $("complaints").value = "";
+    $("diagnosis").value = "";
+    $("prescription").value = "";
+    $("advice").value = "";
+    $("followUp").value = "";
+    $("feePayment").value = "";
 
-await loadVisits(currentPatient.id);
-await loadTodayReport();
+    await loadVisits(currentPatient.id);
+    await loadTodayReport();
 
-});
+  }
+);
 
 
 /* =========================================================
-EDIT VISIT
+   EDIT VISIT
 ========================================================= */
 
-window.editVisit=function(id){
+window.editVisit = function (visitId) {
 
-const visit=
-currentVisits.find(v=>String(v.id)===String(id));
+  const visit =
+    currentVisits.find(function (v) {
 
-if(!visit)return;
+      return String(v.id) === String(visitId);
 
-document.getElementById("editVisitId").value=visit.id;
-document.getElementById("editVisitDate").value=visit.visit_date||"";
-document.getElementById("editComplaints").value=visit.complaints||"";
-document.getElementById("editDiagnosis").value=visit.diagnosis||"";
-document.getElementById("editPrescription").value=visit.prescription||"";
-document.getElementById("editAdvice").value=visit.advice||"";
-document.getElementById("editFollowUp").value=visit.follow_up||"";
-document.getElementById("editFeePayment").value=visit.fee_payment??"";
+    });
 
-document.getElementById("editVisitMessage").innerHTML="";
+  if (!visit) return;
 
-document.getElementById("visitModal")
-.classList.remove("hidden");
+  $("editVisitId").value = visit.id;
+  $("editVisitDate").value =
+    visit.visit_date || "";
+
+  $("editComplaints").value =
+    visit.complaints || "";
+
+  $("editDiagnosis").value =
+    visit.diagnosis || "";
+
+  $("editPrescription").value =
+    visit.prescription || "";
+
+  $("editAdvice").value =
+    visit.advice || "";
+
+  $("editFollowUp").value =
+    visit.follow_up || "";
+
+  $("editFeePayment").value =
+    visit.fee_payment || "";
+
+  $("editVisitMessage").innerHTML = "";
+
+  $("visitModal")
+    .classList
+    .remove("hidden");
 
 };
 
 
 /* =========================================================
-SAVE EDITED VISIT
+   SAVE EDITED VISIT
 ========================================================= */
 
-document.getElementById("saveEditedVisitButton")
-.addEventListener("click",async()=>{
+$("saveEditedVisitButton").addEventListener(
+  "click",
+  async function () {
 
-const id=
-document.getElementById("editVisitId").value;
+    const visitId =
+      $("editVisitId").value;
 
-const {error}=
-await supabaseClient
-.from("visits")
-.update({
-visit_date:document.getElementById("editVisitDate").value,
-complaints:document.getElementById("editComplaints").value.trim()||null,
-diagnosis:document.getElementById("editDiagnosis").value.trim()||null,
-prescription:document.getElementById("editPrescription").value.trim()||null,
-advice:document.getElementById("editAdvice").value.trim()||null,
-follow_up:document.getElementById("editFollowUp").value||null,
-fee_payment:document.getElementById("editFeePayment").value
-?Number(document.getElementById("editFeePayment").value)
-:0
-})
-.eq("id",id);
+    const result =
+      await supabaseClient
+        .from("visits")
+        .update({
+          visit_date:
+            $("editVisitDate").value,
 
-if(error){
+          complaints:
+            $("editComplaints").value.trim() || null,
 
-document.getElementById("editVisitMessage").innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
+          diagnosis:
+            $("editDiagnosis").value.trim() || null,
 
-return;
-}
+          prescription:
+            $("editPrescription").value.trim() || null,
 
-document.getElementById("visitModal")
-.classList.add("hidden");
+          advice:
+            $("editAdvice").value.trim() || null,
 
-await loadVisits(currentPatient.id);
-await loadTodayReport();
+          follow_up:
+            $("editFollowUp").value || null,
 
-});
+          fee_payment:
+            $("editFeePayment").value
+              ? Number($("editFeePayment").value)
+              : 0
+        })
+        .eq("id", visitId);
+
+    if (result.error) {
+
+      $("editVisitMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(result.error.message) +
+        "</div>";
+
+      return;
+    }
+
+    $("visitModal")
+      .classList
+      .add("hidden");
+
+    await loadVisits(currentPatient.id);
+    await loadTodayReport();
+
+  }
+);
 
 
 /* =========================================================
-CANCEL EDIT VISIT
+   CANCEL VISIT EDIT
 ========================================================= */
 
-document.getElementById("cancelVisitEditButton")
-.addEventListener("click",()=>{
+$("cancelVisitEditButton").addEventListener(
+  "click",
+  function () {
 
-document.getElementById("visitModal")
-.classList.add("hidden");
+    $("visitModal")
+      .classList
+      .add("hidden");
 
-});
+  }
+);
 
 
 /* =========================================================
-DELETE VISIT
+   DELETE VISIT
 ========================================================= */
 
-window.deleteVisit=async function(id){
+window.deleteVisit = async function (visitId) {
 
-if(!confirm(
-"Are you sure you want to delete this visit?\n\nThis cannot be undone."
-))return;
+  const ok =
+    confirm(
+      "Are you sure you want to delete this visit?\n\n" +
+      "This cannot be undone."
+    );
 
-const {error}=
-await supabaseClient
-.from("visits")
-.delete()
-.eq("id",id);
+  if (!ok) return;
 
-if(error){
+  const result =
+    await supabaseClient
+      .from("visits")
+      .delete()
+      .eq("id", visitId);
 
-alert(error.message);
-return;
-}
+  if (result.error) {
 
-await loadVisits(currentPatient.id);
-await loadTodayReport();
+    alert(result.error.message);
+    return;
+
+  }
+
+  await loadVisits(currentPatient.id);
+  await loadTodayReport();
 
 };
 
 
 /* =========================================================
-PRINT PATIENT
+   PRINT PATIENT RECORD
 ========================================================= */
 
-document.getElementById("printPatientButton")
-.addEventListener("click",()=>{
-
-if(!currentPatient)return;
-
-let rows="";
-
-currentVisits.forEach(v=>{
-
-rows+=`
-<tr>
-<td>${shortDate(v.visit_date)}</td>
-<td>${formatText(v.complaints||"")}</td>
-<td>${formatText(v.diagnosis||"")}</td>
-<td>${formatText(v.prescription||"")}</td>
-<td>${formatText(v.advice||"")}</td>
-<td>${shortDate(v.follow_up||"")}</td>
-<td>${money(v.fee_payment)}</td>
-</tr>
-`;
+$("printPatientButton").addEventListener(
+  "click",
+  function () {
 
-});
+    if (!currentPatient) return;
 
-const html=`
-<!DOCTYPE html>
-<html>
-<head>
-<title>Patient Record</title>
-<style>
-body{font-family:Arial;padding:25px}
-h1{text-align:center;color:#176b4d}
-.patient{line-height:1.8;margin-bottom:20px}
-table{width:100%;border-collapse:collapse;font-size:10px}
-th,td{border:1px solid #aaa;padding:5px;vertical-align:top}
-th{background:#eef7f2}
-</style>
-</head>
-<body>
+    let rows = "";
 
-<h1>NEHA HOMOEOPATHIC CLINIC</h1>
+    currentVisits.forEach(function (visit) {
 
-<h2>Complete Patient Record</h2>
+      rows +=
+        "<tr>" +
 
-<div class="patient">
-<strong>Patient ID:</strong> ${escapeHtml(currentPatient.id)}<br>
-<strong>Name:</strong> ${escapeHtml(currentPatient.name)}<br>
-<strong>Age:</strong> ${escapeHtml(currentPatient.age??"")}<br>
-<strong>Gender:</strong> ${escapeHtml(currentPatient.gender??"")}<br>
-<strong>Mobile:</strong> ${escapeHtml(currentPatient.mobile??"")}<br>
-<strong>Address:</strong> ${formatText(currentPatient.address??"")}
-</div>
+        "<td>" +
+        shortDate(visit.visit_date) +
+        "</td>" +
 
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Complaints</th>
-<th>Diagnosis</th>
-<th>Prescription</th>
-<th>Advice</th>
-<th>Follow-up</th>
-<th>Fee</th>
-</tr>
-</thead>
-<tbody>
-${rows||"<tr><td colspan='7'>No visits.</td></tr>"}
-</tbody>
-</table>
+        "<td>" +
+        formatText(visit.complaints || "") +
+        "</td>" +
 
-<p>Printed on: ${shortDate(getLocalDate())}</p>
+        "<td>" +
+        formatText(visit.diagnosis || "") +
+        "</td>" +
 
-<script>
-window.onload=function(){window.print();}
-<\/script>
+        "<td>" +
+        formatText(visit.prescription || "") +
+        "</td>" +
 
-</body>
-</html>
-`;
+        "<td>" +
+        formatText(visit.advice || "") +
+        "</td>" +
 
-const win=window.open("","_blank");
+        "<td>" +
+        shortDate(visit.follow_up || "") +
+        "</td>" +
 
-if(!win){
+        "<td>" +
+        money(visit.fee_payment) +
+        "</td>" +
 
-alert("Please allow pop-ups for printing.");
-return;
-
-}
+        "</tr>";
 
-win.document.write(html);
-win.document.close();
+    });
 
-});
+    const printWindow =
+      window.open("", "_blank");
 
+    if (!printWindow) {
 
-/* =========================================================
-TODAY PRINT
-========================================================= */
+      alert(
+        "Please allow pop-ups in your browser."
+      );
 
-document.getElementById("printTodayButton")
-.addEventListener("click",printToday);
+      return;
 
+    }
 
-async function printToday(){
+    const html =
+      "<!DOCTYPE html>" +
 
-const today=getLocalDate();
+      "<html><head>" +
 
-const {data:visits,error}=
-await supabaseClient
-.from("visits")
-.select("*")
-.eq("visit_date",today)
-.order("id");
+      "<title>Patient Record</title>" +
 
-if(error){
+      "<style>" +
 
-alert(error.message);
-return;
+      "body{font-family:Arial;padding:25px}" +
 
-}
+      "h1{text-align:center;color:#176b4d}" +
 
-const records=visits||[];
+      "table{width:100%;border-collapse:collapse;font-size:10px}" +
 
-const patientIds=[
-...new Set(records.map(v=>v.patient_id))
-];
+      "th,td{border:1px solid #999;padding:5px;vertical-align:top}" +
 
-let patients=[];
+      "th{background:#eef7f2}" +
 
-if(patientIds.length){
+      "</style>" +
 
-const result=
-await supabaseClient
-.from("patients")
-.select("*")
-.in("id",patientIds);
+      "</head><body>" +
 
-if(result.error){
+      "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
 
-alert(result.error.message);
-return;
+      "<h2>Complete Patient Record</h2>" +
 
-}
+      "<p>" +
 
-patients=result.data||[];
+      "<strong>Patient ID:</strong> " +
+      escapeHtml(currentPatient.id) +
+      "<br>" +
 
-}
+      "<strong>Name:</strong> " +
+      escapeHtml(currentPatient.name) +
+      "<br>" +
 
-let total=0;
-let rows="";
+      "<strong>Age:</strong> " +
+      escapeHtml(currentPatient.age || "") +
+      "<br>" +
 
-records.forEach((v,i)=>{
+      "<strong>Gender:</strong> " +
+      escapeHtml(currentPatient.gender || "") +
+      "<br>" +
 
-const p=
-patients.find(x=>String(x.id)===String(v.patient_id));
+      "<strong>Mobile:</strong> " +
+      escapeHtml(currentPatient.mobile || "") +
+      "<br>" +
 
-total+=Number(v.fee_payment||0);
+      "<strong>Address:</strong> " +
+      formatText(currentPatient.address || "") +
 
-rows+=`
-<tr>
-<td>${i+1}</td>
-<td>${escapeHtml(p?.name||"")}</td>
-<td>${escapeHtml(p?.age??"")}</td>
-<td>${escapeHtml(p?.gender||"")}</td>
-<td>${escapeHtml(p?.mobile||"")}</td>
-<td>${money(v.fee_payment)}</td>
-</tr>
-`;
+      "</p>" +
 
-});
+      "<table>" +
 
-const html=`
-<!DOCTYPE html>
-<html>
-<head>
-<title>Today's Report</title>
-<style>
-body{font-family:Arial;padding:25px}
-h1,h2{text-align:center;color:#176b4d}
-.summary{text-align:center;font-size:18px;margin:20px}
-table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #aaa;padding:7px}
-th{background:#eef7f2}
-</style>
-</head>
-<body>
+      "<thead><tr>" +
 
-<h1>NEHA HOMOEOPATHIC CLINIC</h1>
+      "<th>Date</th>" +
+      "<th>Complaints</th>" +
+      "<th>Diagnosis</th>" +
+      "<th>Prescription</th>" +
+      "<th>Advice</th>" +
+      "<th>Follow-up</th>" +
+      "<th>Fee</th>" +
 
-<h2>Today's Patient & Payment Report</h2>
+      "</tr></thead>" +
 
-<p style="text-align:center">
-<strong>${shortDate(today)}</strong>
-</p>
+      "<tbody>" +
 
-<div class="summary">
-<strong>Total Patients:</strong> ${records.length}
-&nbsp;&nbsp;&nbsp;
-<strong>Total Payment:</strong> ${money(total)}
-</div>
+      (
+        rows ||
+        "<tr><td colspan='7'>No visits found.</td></tr>"
+      ) +
 
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Patient Name</th>
-<th>Age</th>
-<th>Gender</th>
-<th>Mobile</th>
-<th>Fee</th>
-</tr>
-</thead>
-<tbody>
-${rows||"<tr><td colspan='6'>No patients today.</td></tr>"}
-</tbody>
-</table>
+      "</tbody></table>" +
 
-<script>
-window.onload=function(){window.print();}
-<\/script>
+      "<p>Printed: " +
+      shortDate(localDate()) +
+      "</p>" +
 
-</body>
-</html>
-`;
+      "<script>" +
 
-const win=window.open("","_blank");
+      "window.onload=function(){window.print();};" +
 
-if(!win){
+      "<\/script>" +
 
-alert("Please allow pop-ups for printing.");
-return;
+      "</body></html>";
 
-}
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
 
-win.document.write(html);
-win.document.close();
-
-}
-
-
-/* =========================================================
-BACKUP SETUP
-========================================================= */
-
-function setupBackup(){
-
-const month=document.getElementById("backupMonth");
-const year=document.getElementById("backupYear");
-
-const months=[
-"January","February","March","April","May","June",
-"July","August","September","October","November","December"
-];
-
-month.innerHTML="";
-
-months.forEach((name,index)=>{
-
-const option=document.createElement("option");
-
-option.value=index+1;
-option.textContent=name;
-
-month.appendChild(option);
-
-});
-
-const currentYear=new Date().getFullYear();
-
-year.innerHTML="";
-
-for(let y=currentYear;y>=currentYear-10;y--){
-
-const option=document.createElement("option");
-
-option.value=y;
-option.textContent=y;
-
-year.appendChild(option);
-
-}
-
-month.value=new Date().getMonth()+1;
-year.value=currentYear;
-
-}
-
-
-/* =========================================================
-GET MONTHLY DATA
-========================================================= */
-
-async function getMonthlyData(){
-
-const month=
-parseInt(document.getElementById("backupMonth").value);
-
-const year=
-parseInt(document.getElementById("backupYear").value);
-
-const start=
-`${year}-${String(month).padStart(2,"0")}-01`;
-
-const lastDay=
-new Date(year,month,0).getDate();
-
-const end=
-`${year}-${String(month).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`;
-
-const visitResult=
-await supabaseClient
-.from("visits")
-.select("*")
-.gte("visit_date",start)
-.lte("visit_date",end)
-.order("visit_date",{ascending:true});
-
-if(visitResult.error){
-
-throw visitResult.error;
-
-}
-
-const visits=visitResult.data||[];
-
-const ids=[
-...new Set(visits.map(v=>v.patient_id))
-];
-
-let patients=[];
-
-if(ids.length){
-
-const patientResult=
-await supabaseClient
-.from("patients")
-.select("*")
-.in("id",ids);
-
-if(patientResult.error){
-
-throw patientResult.error;
-
-}
-
-patients=patientResult.data||[];
-
-}
-
-return {month,year,visits,patients};
-
-}
-
-
-/* =========================================================
-TEXT BACKUP
-========================================================= */
-
-document.getElementById("monthlyTextButton")
-.addEventListener("click",async()=>{
-
-const message=
-document.getElementById("backupMessage");
-
-message.innerHTML=
-'<div class="message">Preparing backup...</div>';
-
-try{
-
-const data=await getMonthlyData();
-
-let total=0;
-
-let text=
-"==================================================\n"+
-"NEHA HOMOEOPATHIC CLINIC\n"+
-"MONTHLY PATIENT BACKUP\n"+
-"==================================================\n\n";
-
-data.visits.forEach((v,i)=>{
-
-const p=
-data.patients.find(
-x=>String(x.id)===String(v.patient_id)
+  }
 );
 
-total+=Number(v.fee_payment||0);
-
-text+=
-"RECORD "+(i+1)+"\n"+
-"--------------------------------------------------\n"+
-"Patient ID       : "+(p?.id||"")+"\n"+
-"Name             : "+(p?.name||"")+"\n"+
-"Age              : "+(p?.age??"")+"\n"+
-"Gender           : "+(p?.gender||"")+"\n"+
-"Mobile           : "+(p?.mobile||"")+"\n"+
-"Address          : "+(p?.address||"")+"\n"+
-"Visit Date       : "+shortDate(v.visit_date)+"\n"+
-"Chief Complaints : "+(v.complaints||"")+"\n"+
-"Diagnosis        : "+(v.diagnosis||"")+"\n"+
-"Prescription     : "+(v.prescription||"")+"\n"+
-"Advice           : "+(v.advice||"")+"\n"+
-"Follow-up        : "+shortDate(v.follow_up)+"\n"+
-"Fee Payment      : "+money(v.fee_payment)+"\n\n";
-
-});
-
-text+=
-"==================================================\n"+
-"TOTAL VISITS     : "+data.visits.length+"\n"+
-"TOTAL PAYMENT    : "+money(total)+"\n"+
-"BACKUP DATE      : "+shortDate(getLocalDate())+"\n"+
-"==================================================";
-
-const blob=new Blob(
-[text],
-{type:"text/plain;charset=utf-8"}
-);
-
-const url=URL.createObjectURL(blob);
-
-const a=document.createElement("a");
-
-a.href=url;
-
-a.download=
-"NEHA_CLINIC_"+
-data.year+"_"+String(data.month).padStart(2,"0")+
-"_BACKUP.txt";
-
-document.body.appendChild(a);
-
-a.click();
-
-a.remove();
-
-URL.revokeObjectURL(url);
-
-message.innerHTML=
-'<div class="message">Text backup downloaded successfully.</div>';
-
-}catch(error){
-
-message.innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
-
-}
-
-});
-
 
 /* =========================================================
-MONTHLY PDF / PRINT
+   TODAY REPORT PRINT
 ========================================================= */
 
-document.getElementById("monthlyPdfButton")
-.addEventListener("click",async()=>{
+$("printTodayButton").addEventListener(
+  "click",
+  async function () {
 
-const message=
-document.getElementById("backupMessage");
+    const today = localDate();
 
-message.innerHTML=
-'<div class="message">Preparing monthly report...</div>';
+    const result =
+      await supabaseClient
+        .from("visits")
+        .select("*")
+        .eq("visit_date", today)
+        .order("id");
 
-try{
+    if (result.error) {
 
-const data=await getMonthlyData();
+      alert(result.error.message);
+      return;
 
-let total=0;
-let rows="";
+    }
 
-data.visits.forEach((v,i)=>{
+    const visits = result.data || [];
 
-const p=
-data.patients.find(
-x=>String(x.id)===String(v.patient_id)
+    const patientIds = [
+      ...new Set(
+        visits.map(function (v) {
+          return v.patient_id;
+        })
+      )
+    ];
+
+    let patients = [];
+
+    if (patientIds.length > 0) {
+
+      const patientResult =
+        await supabaseClient
+          .from("patients")
+          .select("*")
+          .in("id", patientIds);
+
+      if (patientResult.error) {
+
+        alert(patientResult.error.message);
+        return;
+
+      }
+
+      patients = patientResult.data || [];
+
+    }
+
+    let total = 0;
+    let rows = "";
+
+    visits.forEach(function (visit, index) {
+
+      const patient =
+        patients.find(function (p) {
+
+          return String(p.id) ===
+            String(visit.patient_id);
+
+        });
+
+      total +=
+        Number(visit.fee_payment || 0);
+
+      rows +=
+        "<tr>" +
+
+        "<td>" +
+        (index + 1) +
+        "</td>" +
+
+        "<td>" +
+        escapeHtml(patient ? patient.name : "") +
+        "</td>" +
+
+        "<td>" +
+        escapeHtml(patient ? patient.age : "") +
+        "</td>" +
+
+        "<td>" +
+        escapeHtml(patient ? patient.gender : "") +
+        "</td>" +
+
+        "<td>" +
+        escapeHtml(patient ? patient.mobile : "") +
+        "</td>" +
+
+        "<td>" +
+        money(visit.fee_payment) +
+        "</td>" +
+
+        "</tr>";
+
+    });
+
+    const printWindow =
+      window.open("", "_blank");
+
+    if (!printWindow) {
+
+      alert(
+        "Please allow pop-ups in your browser."
+      );
+
+      return;
+
+    }
+
+    const html =
+      "<!DOCTYPE html>" +
+
+      "<html><head>" +
+
+      "<title>Today's Report</title>" +
+
+      "<style>" +
+
+      "body{font-family:Arial;padding:25px}" +
+
+      "h1,h2{text-align:center;color:#176b4d}" +
+
+      "table{width:100%;border-collapse:collapse}" +
+
+      "th,td{border:1px solid #999;padding:7px}" +
+
+      "th{background:#eef7f2}" +
+
+      "</style>" +
+
+      "</head><body>" +
+
+      "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
+
+      "<h2>Today's Patient & Payment Report</h2>" +
+
+      "<p style='text-align:center'>" +
+
+      shortDate(today) +
+
+      "</p>" +
+
+      "<p style='text-align:center'>" +
+
+      "<strong>Total Patients:</strong> " +
+      visits.length +
+
+      " &nbsp;&nbsp; " +
+
+      "<strong>Total Payment:</strong> " +
+      money(total) +
+
+      "</p>" +
+
+      "<table>" +
+
+      "<thead><tr>" +
+
+      "<th>#</th>" +
+      "<th>Patient</th>" +
+      "<th>Age</th>" +
+      "<th>Gender</th>" +
+      "<th>Mobile</th>" +
+      "<th>Fee</th>" +
+
+      "</tr></thead>" +
+
+      "<tbody>" +
+
+      (
+        rows ||
+        "<tr><td colspan='6'>No patients today.</td></tr>"
+      ) +
+
+      "</tbody></table>" +
+
+      "<script>" +
+
+      "window.onload=function(){window.print();};" +
+
+      "<\/script>" +
+
+      "</body></html>";
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+  }
 );
-
-total+=Number(v.fee_payment||0);
-
-rows+=`
-<tr>
-<td>${i+1}</td>
-<td>${shortDate(v.visit_date)}</td>
-<td>${escapeHtml(p?.id||"")}</td>
-<td>${escapeHtml(p?.name||"")}</td>
-<td>${escapeHtml(p?.age??"")}</td>
-<td>${escapeHtml(p?.gender||"")}</td>
-<td>${escapeHtml(p?.mobile||"")}</td>
-<td>${formatText(v.complaints||"")}</td>
-<td>${formatText(v.diagnosis||"")}</td>
-<td>${formatText(v.prescription||"")}</td>
-<td>${money(v.fee_payment)}</td>
-</tr>
-`;
-
-});
-
-const monthName=
-document.getElementById("backupMonth")
-.selectedOptions[0].textContent;
-
-const html=`
-<!DOCTYPE html>
-<html>
-<head>
-<title>Monthly Backup</title>
-<style>
-body{font-family:Arial;padding:15px}
-h1{text-align:center;color:#176b4d;font-size:22px}
-h2{text-align:center;font-size:16px}
-.summary{text-align:center;margin:15px}
-table{width:100%;border-collapse:collapse;font-size:8px}
-th,td{border:1px solid #999;padding:4px;vertical-align:top}
-th{background:#176b4d;color:#fff}
-</style>
-</head>
-<body>
-
-<h1>NEHA HOMOEOPATHIC CLINIC</h1>
-
-<h2>Monthly Patient Backup - ${monthName} ${data.year}</h2>
-
-<div class="summary">
-<strong>Total Visits:</strong> ${data.visits.length}
-&nbsp;&nbsp;&nbsp;
-<strong>Total Payment:</strong> ${money(total)}
-</div>
-
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Date</th>
-<th>ID</th>
-<th>Name</th>
-<th>Age</th>
-<th>Gender</th>
-<th>Mobile</th>
-<th>Complaints</th>
-<th>Diagnosis</th>
-<th>Prescription</th>
-<th>Fee</th>
-</tr>
-</thead>
-
-<tbody>
-${rows||"<tr><td colspan='11'>No records found.</td></tr>"}
-</tbody>
-</table>
-
-<p>Backup generated: ${shortDate(getLocalDate())}</p>
-
-<script>
-window.onload=function(){window.print();}
-<\\/script>
-
-</body>
-</html>
-`;
-
-const win=window.open("","_blank");
-
-if(!win){
-
-alert(
-"Please allow pop-ups. Then choose Save as PDF in the print window."
-);
-
-return;
-}
-
-win.document.write(html);
-win.document.close();
-
-message.innerHTML=
-'<div class="message">Monthly report opened. Choose "Save as PDF" to create the PDF backup.</div>';
-
-}catch(error){
-
-message.innerHTML=
-'<div class="message error">'+
-escapeHtml(error.message)+
-'</div>';
-
-}
-
-});
 
 
 /* =========================================================
-START
+   MONTHLY BACKUP SETUP
+========================================================= */
+
+function setupBackup() {
+
+  if (!$("backupMonth") || !$("backupYear")) {
+    return;
+  }
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  $("backupMonth").innerHTML = "";
+
+  months.forEach(function (name, index) {
+
+    const option =
+      document.createElement("option");
+
+    option.value = index + 1;
+    option.textContent = name;
+
+    $("backupMonth").appendChild(option);
+
+  });
+
+  const currentYear =
+    new Date().getFullYear();
+
+  $("backupYear").innerHTML = "";
+
+  for (
+    let year = currentYear;
+    year >= currentYear - 10;
+    year--
+  ) {
+
+    const option =
+      document.createElement("option");
+
+    option.value = year;
+    option.textContent = year;
+
+    $("backupYear").appendChild(option);
+
+  }
+
+  $("backupMonth").value =
+    new Date().getMonth() + 1;
+
+  $("backupYear").value =
+    currentYear;
+
+}
+
+
+/* =========================================================
+   GET MONTHLY DATA
+========================================================= */
+
+async function getMonthlyData() {
+
+  const month =
+    parseInt($("backupMonth").value, 10);
+
+  const year =
+    parseInt($("backupYear").value, 10);
+
+  const start =
+    year +
+    "-" +
+    String(month).padStart(2, "0") +
+    "-01";
+
+  const lastDay =
+    new Date(year, month, 0).getDate();
+
+  const end =
+    year +
+    "-" +
+    String(month).padStart(2, "0") +
+    "-" +
+    String(lastDay).padStart(2, "0");
+
+  const visitResult =
+    await supabaseClient
+      .from("visits")
+      .select("*")
+      .gte("visit_date", start)
+      .lte("visit_date", end)
+      .order("visit_date", {
+        ascending: true
+      });
+
+  if (visitResult.error) {
+    throw visitResult.error;
+  }
+
+  const visits =
+    visitResult.data || [];
+
+  const ids = [
+    ...new Set(
+      visits.map(function (v) {
+        return v.patient_id;
+      })
+    )
+  ];
+
+  let patients = [];
+
+  if (ids.length > 0) {
+
+    const patientResult =
+      await supabaseClient
+        .from("patients")
+        .select("*")
+        .in("id", ids);
+
+    if (patientResult.error) {
+      throw patientResult.error;
+    }
+
+    patients =
+      patientResult.data || [];
+
+  }
+
+  return {
+    month: month,
+    year: year,
+    visits: visits,
+    patients: patients
+  };
+
+}
+
+
+/* =========================================================
+   TEXT BACKUP
+========================================================= */
+
+$("monthlyTextButton").addEventListener(
+  "click",
+  async function () {
+
+    try {
+
+      const data =
+        await getMonthlyData();
+
+      let total = 0;
+
+      let text =
+        "==================================================\n" +
+        "NEHA HOMOEOPATHIC CLINIC\n" +
+        "MONTHLY PATIENT BACKUP\n" +
+        "==================================================\n\n";
+
+      data.visits.forEach(
+        function (visit, index) {
+
+          const patient =
+            data.patients.find(function (p) {
+
+              return String(p.id) ===
+                String(visit.patient_id);
+
+            });
+
+          total +=
+            Number(visit.fee_payment || 0);
+
+          text +=
+            "RECORD " +
+            (index + 1) +
+            "\n" +
+
+            "--------------------------------------------------\n" +
+
+            "Patient ID       : " +
+            (patient ? patient.id : "") +
+            "\n" +
+
+            "Name             : " +
+            (patient ? patient.name : "") +
+            "\n" +
+
+            "Age              : " +
+            (patient ? patient.age || "" : "") +
+            "\n" +
+
+            "Gender           : " +
+            (patient ? patient.gender || "" : "") +
+            "\n" +
+
+            "Mobile           : " +
+            (patient ? patient.mobile || "" : "") +
+            "\n" +
+
+            "Address          : " +
+            (patient ? patient.address || "" : "") +
+            "\n" +
+
+            "Visit Date       : " +
+            shortDate(visit.visit_date) +
+            "\n" +
+
+            "Chief Complaints : " +
+            (visit.complaints || "") +
+            "\n" +
+
+            "Diagnosis        : " +
+            (visit.diagnosis || "") +
+            "\n" +
+
+            "Prescription     : " +
+            (visit.prescription || "") +
+            "\n" +
+
+            "Advice           : " +
+            (visit.advice || "") +
+            "\n" +
+
+            "Follow-up        : " +
+            shortDate(visit.follow_up) +
+            "\n" +
+
+            "Fee Payment      : " +
+            money(visit.fee_payment) +
+            "\n\n";
+
+        }
+      );
+
+      text +=
+        "==================================================\n" +
+
+        "TOTAL VISITS     : " +
+        data.visits.length +
+        "\n" +
+
+        "TOTAL PAYMENT    : " +
+        money(total) +
+        "\n" +
+
+        "BACKUP DATE      : " +
+        shortDate(localDate()) +
+        "\n" +
+
+        "==================================================";
+
+      const blob =
+        new Blob(
+          [text],
+          {
+            type:
+              "text/plain;charset=utf-8"
+          }
+        );
+
+      const url =
+        URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      link.href = url;
+
+      link.download =
+        "NEHA_CLINIC_" +
+        data.year +
+        "_" +
+        String(data.month).padStart(2, "0") +
+        "_BACKUP.txt";
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+      URL.revokeObjectURL(url);
+
+      $("backupMessage").innerHTML =
+        '<div class="message">' +
+        "Text backup downloaded successfully." +
+        "</div>";
+
+    } catch (error) {
+
+      $("backupMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(error.message) +
+        "</div>";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   MONTHLY PDF / PRINT
+========================================================= */
+
+$("monthlyPdfButton").addEventListener(
+  "click",
+  async function () {
+
+    try {
+
+      const data =
+        await getMonthlyData();
+
+      let total = 0;
+      let rows = "";
+
+      data.visits.forEach(
+        function (visit, index) {
+
+          const patient =
+            data.patients.find(function (p) {
+
+              return String(p.id) ===
+                String(visit.patient_id);
+
+            });
+
+          total +=
+            Number(visit.fee_payment || 0);
+
+          rows +=
+            "<tr>" +
+
+            "<td>" +
+            (index + 1) +
+            "</td>" +
+
+            "<td>" +
+            shortDate(visit.visit_date) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient ? patient.id : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient ? patient.name : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient ? patient.age || "" : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient ? patient.gender || "" : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            escapeHtml(
+              patient ? patient.mobile || "" : ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            formatText(
+              visit.complaints || ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            formatText(
+              visit.diagnosis || ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            formatText(
+              visit.prescription || ""
+            ) +
+            "</td>" +
+
+            "<td>" +
+            money(visit.fee_payment) +
+            "</td>" +
+
+            "</tr>";
+
+        }
+      );
+
+      const monthName =
+        $("backupMonth")
+          .selectedOptions[0]
+          .textContent;
+
+      const printWindow =
+        window.open("", "_blank");
+
+      if (!printWindow) {
+
+        alert(
+          "Please allow pop-ups in your browser."
+        );
+
+        return;
+
+      }
+
+      const html =
+        "<!DOCTYPE html>" +
+
+        "<html><head>" +
+
+        "<title>Monthly Backup</title>" +
+
+        "<style>" +
+
+        "body{font-family:Arial;padding:15px}" +
+
+        "h1{text-align:center;color:#176b4d}" +
+
+        "h2{text-align:center}" +
+
+        "table{width:100%;border-collapse:collapse;font-size:8px}" +
+
+        "th,td{border:1px solid #999;padding:4px;vertical-align:top}" +
+
+        "th{background:#176b4d;color:white}" +
+
+        "</style>" +
+
+        "</head><body>" +
+
+        "<h1>NEHA HOMOEOPATHIC CLINIC</h1>" +
+
+        "<h2>Monthly Patient Backup - " +
+        monthName +
+        " " +
+        data.year +
+        "</h2>" +
+
+        "<p style='text-align:center'>" +
+
+        "<strong>Total Visits:</strong> " +
+        data.visits.length +
+
+        " &nbsp;&nbsp;&nbsp; " +
+
+        "<strong>Total Payment:</strong> " +
+        money(total) +
+
+        "</p>" +
+
+        "<table>" +
+
+        "<thead><tr>" +
+
+        "<th>#</th>" +
+        "<th>Date</th>" +
+        "<th>ID</th>" +
+        "<th>Name</th>" +
+        "<th>Age</th>" +
+        "<th>Gender</th>" +
+        "<th>Mobile</th>" +
+        "<th>Complaints</th>" +
+        "<th>Diagnosis</th>" +
+        "<th>Prescription</th>" +
+        "<th>Fee</th>" +
+
+        "</tr></thead>" +
+
+        "<tbody>" +
+
+        (
+          rows ||
+          "<tr><td colspan='11'>No records found.</td></tr>"
+        ) +
+
+        "</tbody></table>" +
+
+        "<p>Backup generated: " +
+        shortDate(localDate()) +
+        "</p>" +
+
+        "<script>" +
+
+        "window.onload=function(){window.print();};" +
+
+        "<\/script>" +
+
+        "</body></html>";
+
+      printWindow.document.open();
+
+      printWindow.document.write(html);
+
+      printWindow.document.close();
+
+      $("backupMessage").innerHTML =
+        '<div class="message">' +
+        "Report opened. Choose Save as PDF in the print window." +
+        "</div>";
+
+    } catch (error) {
+
+      $("backupMessage").innerHTML =
+        '<div class="message error">' +
+        escapeHtml(error.message) +
+        "</div>";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   START
 ========================================================= */
 
 checkLogin();
 
-</script>
-
-</body>
-</html>
+console.log(
+  "NEHA HOMOEOPATHIC CLINIC JavaScript loaded successfully."
+);
