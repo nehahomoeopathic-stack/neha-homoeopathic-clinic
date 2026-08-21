@@ -2699,7 +2699,7 @@ loadDashboard
 
 
 /* =========================================================
-   TODAY REPORT
+   TODAY REPORT - UPDATED
    ========================================================= */
 
 printTodayButton.addEventListener(
@@ -2710,8 +2710,7 @@ async function(){
 
   try{
 
-    const result =
-      await supabaseClient
+    const result = await supabaseClient
       .from("visits")
       .select("*")
       .eq("visit_date",today)
@@ -2724,20 +2723,19 @@ async function(){
 
     const visits = result.data || [];
 
-    const patientIds = [
-      ...new Set(
-        visits.map(v => String(v.patient_id))
-      )
-    ];
+    const patientIds = [...new Set(
+      visits
+        .map(v => v.patient_id)
+        .filter(id => id !== null && id !== undefined)
+        .map(id => String(id))
+    )];
 
     let patients = [];
 
     if(patientIds.length){
-
-      const patientResult =
-        await supabaseClient
+      const patientResult = await supabaseClient
         .from("patients")
-        .select("id,name,age,gender,mobile")
+        .select("id,name,age,gender,mobile,address")
         .in("id",patientIds);
 
       if(patientResult.error){
@@ -2749,31 +2747,18 @@ async function(){
     }
 
     const patientMap = new Map();
+    patients.forEach(p => patientMap.set(String(p.id),p));
 
-    patients.forEach(function(p){
-      patientMap.set(String(p.id),p);
-    });
+    const totalPatients = new Set(
+      visits.map(v => String(v.patient_id))
+    ).size;
 
-    const uniquePatients =
-      new Set(
-        visits.map(v => String(v.patient_id))
-      );
+    const totalAmount = visits.reduce(
+      (sum,v) => sum + (parseFloat(v.fee_payment || 0) || 0),
+      0
+    );
 
-    let totalAmount = 0;
-
-    visits.forEach(function(v){
-      totalAmount +=
-        parseFloat(v.fee_payment || 0) || 0;
-    });
-
-    const totalPatients = uniquePatients.size;
-
-    const printWindow =
-      window.open(
-        "",
-        "_blank",
-        "width=1100,height=900"
-      );
+    const printWindow = window.open("","_blank","width=1100,height=900");
 
     if(!printWindow){
       alert("Please allow pop-ups.");
@@ -2783,274 +2768,72 @@ async function(){
     let rows = "";
 
     visits.forEach(function(v,index){
-
-      const p =
-        patientMap.get(
-          String(v.patient_id)
-        ) || {};
+      const p = patientMap.get(String(v.patient_id)) || {};
+      const fee = parseFloat(v.fee_payment || 0) || 0;
 
       rows += `
-
 <tr>
-
 <td>${index+1}</td>
-
 <td>${escapeHtml(p.name || "Unknown Patient")}</td>
-
 <td>${escapeHtml(p.age ?? "")}</td>
-
 <td>${escapeHtml(p.gender || "")}</td>
-
 <td>${escapeHtml(p.mobile || "")}</td>
-
 <td>${escapeHtml(v.diagnosis || "")}</td>
-
-<td>
-₹${(
-  parseFloat(v.fee_payment || 0) || 0
-).toFixed(2)}
-</td>
-
-</tr>
-
-`;
-
+<td>₹${fee.toFixed(2)}</td>
+</tr>`;
     });
 
     if(!rows){
-
-      rows = `
-
-<tr>
-
-<td
-colspan="7"
-style="text-align:center;padding:15px"
->
-No patients/visits found for today.
-</td>
-
-</tr>
-
-`;
-
+      rows = `<tr><td colspan="7" style="text-align:center;padding:15px">No patients/visits found for today.</td></tr>`;
     }
 
     printWindow.document.write(`
-
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
 <meta charset="UTF-8">
-
 <title>Today's Report</title>
-
 <style>
-
-@page{
-size:A4 landscape;
-margin:10mm;
-}
-
-body{
-font-family:Arial,sans-serif;
-padding:15px;
-color:#222;
-}
-
-h1{
-text-align:center;
-color:#176b4d;
-margin-bottom:5px;
-}
-
-h2{
-text-align:center;
-margin-top:5px;
-}
-
-.summary{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px;
-margin:20px 0;
-}
-
-.summary-box{
-border:2px solid #176b4d;
-padding:14px;
-text-align:center;
-border-radius:6px;
-}
-
-.summary-label{
-font-size:13px;
-font-weight:bold;
-}
-
-.summary-value{
-font-size:22px;
-font-weight:bold;
-color:#176b4d;
-margin-top:5px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-}
-
-th,td{
-border:1px solid #999;
-padding:7px;
-text-align:left;
-vertical-align:top;
-}
-
-th{
-background:#176b4d;
-color:white;
-}
-
-.total-row td{
-font-weight:bold;
-font-size:14px;
-background:#eef7f2;
-}
-
-.footer{
-margin-top:20px;
-text-align:center;
-font-size:10px;
-color:#555;
-}
-
-@media print{
-body{
-padding:0;
-}
-
-}
-
+@page{size:A4 landscape;margin:10mm;}
+body{font-family:Arial,sans-serif;padding:15px;color:#222;}
+h1{text-align:center;color:#176b4d;margin-bottom:5px;}
+h2{text-align:center;margin-top:5px;}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0;}
+.summary-box{border:2px solid #176b4d;padding:14px;text-align:center;border-radius:6px;}
+.summary-label{font-size:13px;font-weight:bold;}
+.summary-value{font-size:22px;font-weight:bold;color:#176b4d;margin-top:5px;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th,td{border:1px solid #999;padding:7px;text-align:left;vertical-align:top;}
+th{background:#176b4d;color:white;}
+.total-row td{font-weight:bold;font-size:14px;background:#eef7f2;}
+.footer{margin-top:20px;text-align:center;font-size:10px;color:#555;}
 </style>
-
 </head>
-
 <body>
-
 <h1>NEHA HOMOEOPATHIC CLINIC</h1>
-
-<h2>
-Today's Patient Report -
-${escapeHtml(formatDate(today))}
-</h2>
-
+<h2>Today's Report - ${escapeHtml(formatDate(today))}</h2>
 <div class="summary">
-
-<div class="summary-box">
-
-<div class="summary-label">
-TOTAL PATIENTS
+<div class="summary-box"><div class="summary-label">TOTAL PATIENTS</div><div class="summary-value">${totalPatients}</div></div>
+<div class="summary-box"><div class="summary-label">TOTAL AMOUNT</div><div class="summary-value">₹${totalAmount.toFixed(2)}</div></div>
 </div>
-
-<div class="summary-value">
-${totalPatients}
-</div>
-
-</div>
-
-<div class="summary-box">
-
-<div class="summary-label">
-TOTAL AMOUNT
-</div>
-
-<div class="summary-value">
-₹${totalAmount.toFixed(2)}
-</div>
-
-</div>
-
-</div>
-
 <table>
-
-<thead>
-
-<tr>
-
-<th>S.No.</th>
-<th>Patient Name</th>
-<th>Age</th>
-<th>Gender</th>
-<th>Mobile</th>
-<th>Diagnosis</th>
-<th>Payment</th>
-
-</tr>
-
-</thead>
-
+<thead><tr><th>S.No.</th><th>Patient Name</th><th>Age</th><th>Gender</th><th>Mobile</th><th>Diagnosis</th><th>Payment</th></tr></thead>
 <tbody>
-
 ${rows}
-
-<tr class="total-row">
-
-<td
-colspan="6"
-style="text-align:right"
->
-TOTAL
-</td>
-
-<td>
-₹${totalAmount.toFixed(2)}
-</td>
-
-</tr>
-
+<tr class="total-row"><td colspan="6" style="text-align:right">TOTAL</td><td>₹${totalAmount.toFixed(2)}</td></tr>
 </tbody>
-
 </table>
-
-<div class="footer">
-NEHA HOMOEOPATHIC CLINIC |
-Dr. ARIF ALI, B.H.M.S
-</div>
-
+<div class="footer">NEHA HOMOEOPATHIC CLINIC | Dr. ARIF ALI, B.H.M.S</div>
 <script>
-
-window.onload=function(){
-
-setTimeout(function(){
-window.print();
-},500);
-
-};
-
+window.onload=function(){setTimeout(function(){window.print();},500);};
 <\/script>
-
 </body>
-
-</html>
-
-`);
+</html>`);
 
     printWindow.document.close();
 
-  }
-  catch(error){
-
-    alert(
-      "Report error: " +
-      error.message
-    );
-
+  }catch(error){
+    alert("Report error: " + error.message);
   }
 
 });
@@ -3206,7 +2989,7 @@ function backupSuccess(text){
 
 
 /* =========================================================
-   PDF BACKUP
+   PDF BACKUP - UPDATED
    ========================================================= */
 
 backupPdfButton.addEventListener(
@@ -3217,341 +3000,99 @@ async function(){
 
     backupModal.classList.add("hidden");
 
-    const data =
-      await getMonthlyBackupData();
+    const data = await getMonthlyBackupData();
 
     if(!data.visits.length){
-
-      backupSuccess(
-        "No visits found for the selected month."
-      );
-
+      backupSuccess("No visits found for the selected month.");
       return;
-
     }
 
-    const uniquePatients =
-      new Set(
-        data.visits.map(
-          v => String(v.patient_id)
-        )
-      );
+    const totalPatients = new Set(
+      data.visits.map(v => String(v.patient_id))
+    ).size;
 
-    let totalAmount = 0;
+    const totalAmount = data.visits.reduce(
+      (sum,v) => sum + (parseFloat(v.fee_payment || 0) || 0),
+      0
+    );
 
-    data.visits.forEach(function(v){
-
-      totalAmount +=
-        parseFloat(
-          v.fee_payment || 0
-        ) || 0;
-
-    });
-
-    const totalPatients =
-      uniquePatients.size;
-
-    const printWindow =
-      window.open(
-        "",
-        "_blank",
-        "width=1200,height=900"
-      );
+    const printWindow = window.open("","_blank","width=1200,height=900");
 
     if(!printWindow){
-
       alert("Please allow pop-ups.");
       return;
-
     }
 
     let rows = "";
 
     data.visits.forEach(function(v,index){
-
-      const p =
-        data.patientMap.get(
-          String(v.patient_id)
-        ) || {};
+      const p = data.patientMap.get(String(v.patient_id)) || {};
+      const fee = parseFloat(v.fee_payment || 0) || 0;
 
       rows += `
-
 <tr>
-
 <td>${index+1}</td>
-
-<td>
-${escapeHtml(
-  formatDate(v.visit_date)
-)}
-</td>
-
-<td>
-${escapeHtml(
-  p.name || "Unknown Patient"
-)}
-</td>
-
-<td>
-${escapeHtml(p.age ?? "")}
-</td>
-
-<td>
-${escapeHtml(p.gender || "")}
-</td>
-
-<td>
-${escapeHtml(p.mobile || "")}
-</td>
-
-<td>
-${escapeHtml(v.diagnosis || "")}
-</td>
-
-<td>
-${escapeHtml(v.prescription || "")}
-</td>
-
-<td>
-${escapeHtml(v.advice || "")}
-</td>
-
-<td>
-₹${(
-  parseFloat(v.fee_payment || 0) || 0
-).toFixed(2)}
-</td>
-
-</tr>
-
-`;
-
+<td>${escapeHtml(formatDate(v.visit_date))}</td>
+<td>${escapeHtml(p.name || "Unknown Patient")}</td>
+<td>${escapeHtml(p.age ?? "")}</td>
+<td>${escapeHtml(p.gender || "")}</td>
+<td>${escapeHtml(p.mobile || "")}</td>
+<td>${escapeHtml(v.diagnosis || "")}</td>
+<td>${escapeHtml(v.prescription || "")}</td>
+<td>${escapeHtml(v.advice || "")}</td>
+<td>₹${fee.toFixed(2)}</td>
+</tr>`;
     });
 
     printWindow.document.write(`
-
 <!DOCTYPE html>
-
 <html>
-
 <head>
-
 <meta charset="UTF-8">
-
-<title>
-Monthly Backup - ${escapeHtml(data.month)}
-</title>
-
+<title>Monthly Backup - ${escapeHtml(data.month)}</title>
 <style>
-
-@page{
-size:A4 landscape;
-margin:8mm;
-}
-
-body{
-font-family:Arial,sans-serif;
-font-size:9px;
-color:#222;
-}
-
-h1{
-text-align:center;
-color:#176b4d;
-margin-bottom:4px;
-}
-
-h2{
-text-align:center;
-margin-top:4px;
-}
-
-.summary{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin:15px 0;
-}
-
-.summary-box{
-border:2px solid #176b4d;
-padding:10px;
-text-align:center;
-border-radius:5px;
-}
-
-.summary-label{
-font-size:11px;
-font-weight:bold;
-}
-
-.summary-value{
-font-size:18px;
-font-weight:bold;
-color:#176b4d;
-margin-top:4px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th,td{
-border:1px solid #777;
-padding:4px;
-vertical-align:top;
-}
-
-th{
-background:#176b4d;
-color:white;
-}
-
-.total-row td{
-font-weight:bold;
-font-size:11px;
-background:#eef7f2;
-}
-
-.footer{
-margin-top:12px;
-text-align:center;
-font-size:9px;
-color:#555;
-}
-
+@page{size:A4 landscape;margin:8mm;}
+body{font-family:Arial,sans-serif;font-size:9px;color:#222;}
+h1{text-align:center;color:#176b4d;margin-bottom:4px;}
+h2{text-align:center;margin-top:4px;margin-bottom:15px;}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;}
+.summary-box{border:2px solid #176b4d;padding:10px;text-align:center;border-radius:5px;}
+.summary-label{font-size:11px;font-weight:bold;}
+.summary-value{font-size:18px;font-weight:bold;color:#176b4d;margin-top:4px;}
+table{width:100%;border-collapse:collapse;}
+th,td{border:1px solid #777;padding:4px;vertical-align:top;}
+th{background:#176b4d;color:white;}
+.total-row td{font-weight:bold;font-size:11px;background:#eef7f2;}
+.footer{margin-top:12px;text-align:center;font-size:9px;color:#555;}
 </style>
-
 </head>
-
 <body>
-
-<h1>
-NEHA HOMOEOPATHIC CLINIC
-</h1>
-
-<h2>
-Monthly Patient Backup -
-${escapeHtml(data.month)}
-</h2>
-
+<h1>NEHA HOMOEOPATHIC CLINIC</h1>
+<h2>Monthly Patient Backup - ${escapeHtml(data.month)}</h2>
 <div class="summary">
-
-<div class="summary-box">
-
-<div class="summary-label">
-TOTAL PATIENTS
+<div class="summary-box"><div class="summary-label">TOTAL PATIENTS</div><div class="summary-value">${totalPatients}</div></div>
+<div class="summary-box"><div class="summary-label">TOTAL AMOUNT</div><div class="summary-value">₹${totalAmount.toFixed(2)}</div></div>
 </div>
-
-<div class="summary-value">
-${totalPatients}
-</div>
-
-</div>
-
-<div class="summary-box">
-
-<div class="summary-label">
-TOTAL AMOUNT
-</div>
-
-<div class="summary-value">
-₹${totalAmount.toFixed(2)}
-</div>
-
-</div>
-
-</div>
-
 <table>
-
-<thead>
-
-<tr>
-
-<th>S.No.</th>
-<th>Date</th>
-<th>Patient Name</th>
-<th>Age</th>
-<th>Gender</th>
-<th>Mobile</th>
-<th>Diagnosis</th>
-<th>Prescription</th>
-<th>Advice</th>
-<th>Fee</th>
-
-</tr>
-
-</thead>
-
+<thead><tr><th>S.No.</th><th>Date</th><th>Patient Name</th><th>Age</th><th>Gender</th><th>Mobile</th><th>Diagnosis</th><th>Prescription</th><th>Advice</th><th>Fee</th></tr></thead>
 <tbody>
-
 ${rows}
-
-<tr class="total-row">
-
-<td
-colspan="9"
-style="text-align:right"
->
-TOTAL
-</td>
-
-<td>
-₹${totalAmount.toFixed(2)}
-</td>
-
-</tr>
-
+<tr class="total-row"><td colspan="9" style="text-align:right">TOTAL</td><td>₹${totalAmount.toFixed(2)}</td></tr>
 </tbody>
-
 </table>
-
-<div class="footer">
-
-Total Patients:
-${totalPatients}
-&nbsp; | &nbsp;
-Total Amount:
-₹${totalAmount.toFixed(2)}
-
-</div>
-
+<div class="footer">Total Patients: ${totalPatients} &nbsp; | &nbsp; Total Amount: ₹${totalAmount.toFixed(2)}</div>
 <script>
-
-window.onload=function(){
-
-setTimeout(function(){
-window.print();
-},500);
-
-};
-
+window.onload=function(){setTimeout(function(){window.print();},500);};
 <\/script>
-
 </body>
-
-</html>
-
-`);
+</html>`);
 
     printWindow.document.close();
 
-    backupSuccess(
-      "Monthly PDF report opened. Choose Save as PDF in the print window."
-    );
+    backupSuccess("Monthly PDF report opened. Choose Save as PDF in the print window.");
 
-  }
-  catch(error){
-
-    showMessage(
-      "backupMessage",
-      "Backup error: " +
-      error.message,
-      "error"
-    );
-
+  }catch(error){
+    showMessage("backupMessage","Backup error: " + error.message,"error");
   }
 
 });
@@ -3670,10 +3211,8 @@ async function(){
   }
   catch(error){
 
-    showMessage(
-      "backupMessage",
-      "Backup error: " + error.message,
-      "error"
+    backupSuccess(
+      "Backup error: " + error.message
     );
 
   }
@@ -3791,10 +3330,8 @@ async function(){
   }
   catch(error){
 
-    showMessage(
-      "backupMessage",
-      "Backup error: " + error.message,
-      "error"
+    backupSuccess(
+      "Backup error: " + error.message
     );
 
   }
@@ -3961,10 +3498,8 @@ async function(){
   }
   catch(error){
 
-    showMessage(
-      "backupMessage",
-      "Backup error: " + error.message,
-      "error"
+    backupSuccess(
+      "Backup error: " + error.message
     );
 
   }
