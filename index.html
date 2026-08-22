@@ -490,11 +490,20 @@ Cancel
 <label>Follow-up Date</label>
 <input id="followUp" type="date">
 
-<label>Fee Payment (₹)</label>
-<input id="feePayment" type="number" step="0.01" min="0" placeholder="Enter payment amount">
+<label>Previous Balance (₹)</label>
+<input id="previousBalance" type="number" step="0.01" min="0" value="0" readonly>
+
+<label>Today's Fee (₹)</label>
+<input id="feePayment" type="number" step="0.01" min="0" value="0" placeholder="Enter today's fee">
 
 <label>Balance Amount (₹)</label>
-<input id="balanceAmount" type="number" step="0.01" min="0" value="0" placeholder="Enter balance amount if any">
+<input id="balanceAmount" type="number" step="0.01" min="0" value="0" placeholder="Enter remaining balance">
+
+<label>Paid Today (₹)</label>
+<input id="paidToday" type="number" step="0.01" min="0" value="0" readonly>
+
+<div id="paymentCalculation" class="message" style="margin-top:8px"></div>
+<div class="message" style="margin-top:8px">If the patient is only clearing an old balance, enter <strong>Today's Fee = ₹0</strong> and set <strong>Balance Amount = ₹0</strong>.</div>
 
 <button id="saveVisitButton" type="button">
 Save Visit
@@ -527,8 +536,8 @@ Save Visit
 <label>Follow-up Date</label>
 <input id="editFollowUp" type="date">
 
-<label>Fee Payment (₹)</label>
-<input id="editFeePayment" type="number" step="0.01" min="0">
+<label>Paid Today (₹)</label>
+<input id="editFeePayment" type="number" step="0.01" min="0" readonly>
 
 <label>Balance Amount (₹)</label>
 <input id="editBalanceAmount" type="number" step="0.01" min="0" value="0">
@@ -1501,7 +1510,14 @@ async function loadVisits(){
   currentVisits =
     result.data || [];
 
+  currentVisits.sort(function(a,b){
+    const dateCompare = String(b.visit_date || "").localeCompare(String(a.visit_date || ""));
+    if(dateCompare !== 0) return dateCompare;
+    return (Number(b.id) || 0) - (Number(a.id) || 0);
+  });
+
   renderVisitHistory();
+  preparePaymentFields();
 
 }
 
@@ -1585,13 +1601,13 @@ function renderVisitHistory(){
 
         "<br><br>" +
 
-        "<span class='fee'>Fee Paid: ₹" +
+        "<span class='fee'>Paid Today: ₹" +
         escapeHtml(visit.fee_payment ?? 0) +
         "</span>" +
 
         "<br>" +
 
-        "<span class='fee'>Balance: ₹" +
+        "<span class='fee'>Balance Due: ₹" +
         escapeHtml(visit.balance_amount ?? 0) +
         "</span>" +
 
@@ -1782,6 +1798,98 @@ async function(){
 
 
 /* =========================================================
+   PAYMENT / CARRY-FORWARD BALANCE
+   ========================================================= */
+
+function getCurrentOutstandingBalance(){
+
+  if(!currentVisits || !currentVisits.length){
+    return 0;
+  }
+
+  const latest = currentVisits[0];
+
+  return parseFloat(latest.balance_amount || 0) || 0;
+
+}
+
+function updatePaymentCalculation(){
+
+  const previous =
+    parseFloat(document.getElementById("previousBalance").value || 0) || 0;
+
+  const todayFee =
+    parseFloat(document.getElementById("feePayment").value || 0) || 0;
+
+  let balance =
+    parseFloat(document.getElementById("balanceAmount").value || 0) || 0;
+
+  const totalDue = previous + todayFee;
+
+  if(balance > totalDue){
+    balance = totalDue;
+    document.getElementById("balanceAmount").value = balance.toFixed(2);
+  }
+
+  const paid = Math.max(0,totalDue - balance);
+
+  document.getElementById("paidToday").value = paid.toFixed(2);
+
+  const message = document.getElementById("paymentCalculation");
+
+  if(previous > 0){
+    message.innerHTML =
+      "Previous Balance: <strong>₹" + previous.toFixed(2) +
+      "</strong> + Today's Fee: <strong>₹" + todayFee.toFixed(2) +
+      "</strong> = Total Due: <strong>₹" + totalDue.toFixed(2) +
+      "</strong><br>Paid Today: <strong>₹" + paid.toFixed(2) +
+      "</strong> | Remaining Balance: <strong>₹" + balance.toFixed(2) + "</strong>";
+  }else{
+    message.innerHTML =
+      "Today's Fee: <strong>₹" + todayFee.toFixed(2) +
+      "</strong> | Paid Today: <strong>₹" + paid.toFixed(2) +
+      "</strong> | Remaining Balance: <strong>₹" + balance.toFixed(2) + "</strong>";
+  }
+}
+
+function preparePaymentFields(){
+
+  const previous = getCurrentOutstandingBalance();
+
+  document.getElementById("previousBalance").value = previous.toFixed(2);
+  document.getElementById("feePayment").value = "0";
+  document.getElementById("balanceAmount").value = previous.toFixed(2);
+  document.getElementById("feePayment").dataset.autoBalance = "true";
+  document.getElementById("paidToday").value = "0.00";
+
+  updatePaymentCalculation();
+}
+
+document.getElementById("feePayment").addEventListener("input", function(){
+  const previous = parseFloat(document.getElementById("previousBalance").value || 0) || 0;
+  const oldBalance = parseFloat(document.getElementById("balanceAmount").value || 0) || 0;
+  const oldFee = parseFloat(this.dataset.lastFee || 0) || 0;
+  const newFee = parseFloat(this.value || 0) || 0;
+
+  // When starting a new visit, automatically carry the previous balance
+  // forward and add today's fee to it.
+  if(this.dataset.autoBalance === "true"){
+    const newBalance = previous + newFee;
+    document.getElementById("balanceAmount").value = newBalance.toFixed(2);
+    this.dataset.autoBalance = "false";
+  }
+
+  updatePaymentCalculation();
+});
+
+document.getElementById("balanceAmount").addEventListener("input", function(){
+  if(parseFloat(this.value || 0) < 0){
+    this.value = 0;
+  }
+  updatePaymentCalculation();
+});
+
+/* =========================================================
    SAVE VISIT
    ========================================================= */
 
@@ -1818,11 +1926,26 @@ async function(){
   const followUp =
     document.getElementById("followUp").value;
 
-  const fee =
-    document.getElementById("feePayment").value;
+  const previousBalance =
+    parseFloat(document.getElementById("previousBalance").value || 0) || 0;
+
+  const todayFee =
+    parseFloat(document.getElementById("feePayment").value || 0) || 0;
 
   const balance =
-    document.getElementById("balanceAmount").value;
+    parseFloat(document.getElementById("balanceAmount").value || 0) || 0;
+
+  const totalDue = previousBalance + todayFee;
+  const paidToday = totalDue - balance;
+
+  if(balance < 0 || balance > totalDue){
+    showMessage(
+      "visitMessage",
+      "Balance must be between ₹0 and the total amount due.",
+      "error"
+    );
+    return;
+  }
 
   if(!visitDate){
 
@@ -1852,8 +1975,8 @@ async function(){
         prescription:prescription || null,
         advice:advice || null,
         follow_up:followUp || null,
-        fee_payment:fee ? parseFloat(fee) : 0,
-        balance_amount:balance ? parseFloat(balance) : 0
+        fee_payment:Math.max(0,paidToday),
+        balance_amount:balance
       }])
       .select()
       .single();
@@ -1880,9 +2003,12 @@ async function(){
     document.getElementById("prescription").value="";
     document.getElementById("advice").value="";
     document.getElementById("followUp").value="";
-    document.getElementById("feePayment").value="";
-    document.getElementById("balanceAmount").value="0";
+    document.getElementById("feePayment").value="0";
+    document.getElementById("balanceAmount").value=balance.toFixed(2);
+    document.getElementById("previousBalance").value=balance.toFixed(2);
+    document.getElementById("paidToday").value="0.00";
     document.getElementById("visitDate").value=getLocalDate();
+    updatePaymentCalculation();
 
     await loadVisits();
     await loadDashboard();
@@ -2546,7 +2672,7 @@ ${v.follow_up ? escapeHtml(formatDate(v.follow_up)) : "Not specified"}
 </p>
 
 <p>
-<strong>Fee Paid:</strong>
+<strong>Paid Today:</strong>
 ₹${escapeHtml(v.fee_payment ?? 0)}
 <br>
 <strong>Balance:</strong>
