@@ -1907,27 +1907,6 @@ async function(){
 });
 
 
-
-/* =========================================================
-   BALANCE AMOUNT INPUT GUARD
-   ========================================================= */
-
-document
-.getElementById("balanceAmount")
-.addEventListener("input",function(){
-  if(parseFloat(this.value || 0) < 0){
-    this.value = 0;
-  }
-});
-
-document
-.getElementById("editBalanceAmount")
-.addEventListener("input",function(){
-  if(parseFloat(this.value || 0) < 0){
-    this.value = 0;
-  }
-});
-
 /* =========================================================
    EDIT VISIT
    ========================================================= */
@@ -2918,14 +2897,29 @@ monthlyBackupButton.addEventListener(
 "click",
 function(){
 
-  const month =
-    document.getElementById("backupMonth").value;
+  const from =
+    document.getElementById("backupFromDate").value;
 
-  if(!month){
+  const to =
+    document.getElementById("backupToDate").value;
+
+  if(!from || !to){
 
     showMessage(
       "backupMessage",
-      "Please select a month first.",
+      "Please select both From Date and To Date.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(from > to){
+
+    showMessage(
+      "backupMessage",
+      "From Date cannot be later than To Date.",
       "error"
     );
 
@@ -2999,13 +2993,7 @@ async function getMonthlyBackupData(){
     result.data || [];
 
   const patientIds =
-    [
-      ...new Set(
-        visits.map(
-          v => v.patient_id
-        )
-      )
-    ];
+    [...new Set(visits.map(v => v.patient_id))];
 
   let patients = [];
 
@@ -3026,19 +3014,11 @@ async function getMonthlyBackupData(){
 
   }
 
-  const patientMap =
-    new Map();
+  const patientMap = new Map();
 
-  patients.forEach(
-    function(p){
-
-      patientMap.set(
-        String(p.id),
-        p
-      );
-
-    }
-  );
+  patients.forEach(function(p){
+    patientMap.set(String(p.id),p);
+  });
 
   return {
     from,
@@ -3059,49 +3039,6 @@ function backupSuccess(text){
   );
 
 }
-
-
-/* =========================================================
-   VALIDATE BACKUP DATES
-   ========================================================= */
-
-monthlyBackupButton.addEventListener(
-"click",
-function(){
-
-  const from =
-    document.getElementById("backupFromDate").value;
-
-  const to =
-    document.getElementById("backupToDate").value;
-
-  if(!from || !to){
-
-    showMessage(
-      "backupMessage",
-      "Please select both From Date and To Date.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  if(from > to){
-
-    showMessage(
-      "backupMessage",
-      "From Date cannot be later than To Date.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  backupModal.classList.remove("hidden");
-
-});
 
 
 /* =========================================================
@@ -3443,6 +3380,8 @@ async function(){
       blob,
       "NEHA_CLINIC_" +
       data.from +
+      "_TO_" +
+      data.to +
       "_BACKUP.csv"
     );
 
@@ -3618,6 +3557,8 @@ async function(){
       blob,
       "NEHA_CLINIC_" +
       data.from +
+      "_TO_" +
+      data.to +
       "_BACKUP.txt"
     );
 
