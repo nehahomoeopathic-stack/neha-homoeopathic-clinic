@@ -493,6 +493,9 @@ Cancel
 <label>Fee Payment (₹)</label>
 <input id="feePayment" type="number" step="0.01" min="0" placeholder="Enter payment amount">
 
+<label>Balance Amount (₹)</label>
+<input id="balanceAmount" type="number" step="0.01" min="0" value="0" placeholder="Enter balance amount if any">
+
 <button id="saveVisitButton" type="button">
 Save Visit
 </button>
@@ -527,6 +530,9 @@ Save Visit
 <label>Fee Payment (₹)</label>
 <input id="editFeePayment" type="number" step="0.01" min="0">
 
+<label>Balance Amount (₹)</label>
+<input id="editBalanceAmount" type="number" step="0.01" min="0" value="0">
+
 <button id="saveVisitEditButton" type="button">
 Save Visit Changes
 </button>
@@ -541,21 +547,31 @@ Cancel
 
 </div>
 
-<!-- MONTHLY BACKUP -->
+<!-- BACKUP -->
 <div class="card">
 
-<h2>Monthly Backup</h2>
+<h2>Backup</h2>
 
 <p>
-Select a month and choose the backup format.
+Select the date range and choose the backup format.
 </p>
 
-<label>Select Month</label>
+<div class="grid">
 
-<input id="backupMonth" type="month">
+<div>
+<label>From Date</label>
+<input id="backupFromDate" type="date">
+</div>
+
+<div>
+<label>To Date</label>
+<input id="backupToDate" type="date">
+</div>
+
+</div>
 
 <button id="monthlyBackupButton" type="button">
-📦 Create Monthly Backup
+📦 Create Backup
 </button>
 
 <div id="backupMessage"></div>
@@ -571,7 +587,7 @@ Select a month and choose the backup format.
 
 <div class="modal-box">
 
-<h2>Monthly Backup</h2>
+<h2>Backup</h2>
 
 <p>Choose the backup format:</p>
 
@@ -693,6 +709,12 @@ document.getElementById("refreshDashboardButton");
 
 const monthlyBackupButton =
 document.getElementById("monthlyBackupButton");
+
+const backupFromDate =
+document.getElementById("backupFromDate");
+
+const backupToDate =
+document.getElementById("backupToDate");
 
 const backupPdfButton =
 document.getElementById("backupPdfButton");
@@ -1041,9 +1063,12 @@ function showApp(){
     formatDate(today);
 
   document
-  .getElementById("backupMonth")
-  .value =
-    getCurrentMonth();
+  .getElementById("backupFromDate")
+  .value = today;
+
+  document
+  .getElementById("backupToDate")
+  .value = today;
 
   setConnectionStatus(
     "Connected to clinic database"
@@ -1560,8 +1585,14 @@ function renderVisitHistory(){
 
         "<br><br>" +
 
-        "<span class='fee'>Fee: ₹" +
+        "<span class='fee'>Fee Paid: ₹" +
         escapeHtml(visit.fee_payment ?? 0) +
+        "</span>" +
+
+        "<br>" +
+
+        "<span class='fee'>Balance: ₹" +
+        escapeHtml(visit.balance_amount ?? 0) +
         "</span>" +
 
         "<div class='visit-actions'>" +
@@ -1790,6 +1821,9 @@ async function(){
   const fee =
     document.getElementById("feePayment").value;
 
+  const balance =
+    document.getElementById("balanceAmount").value;
+
   if(!visitDate){
 
     showMessage(
@@ -1818,7 +1852,8 @@ async function(){
         prescription:prescription || null,
         advice:advice || null,
         follow_up:followUp || null,
-        fee_payment:fee ? parseFloat(fee) : 0
+        fee_payment:fee ? parseFloat(fee) : 0,
+        balance_amount:balance ? parseFloat(balance) : 0
       }])
       .select()
       .single();
@@ -1846,6 +1881,7 @@ async function(){
     document.getElementById("advice").value="";
     document.getElementById("followUp").value="";
     document.getElementById("feePayment").value="";
+    document.getElementById("balanceAmount").value="0";
     document.getElementById("visitDate").value=getLocalDate();
 
     await loadVisits();
@@ -1870,6 +1906,27 @@ async function(){
 
 });
 
+
+
+/* =========================================================
+   BALANCE AMOUNT INPUT GUARD
+   ========================================================= */
+
+document
+.getElementById("balanceAmount")
+.addEventListener("input",function(){
+  if(parseFloat(this.value || 0) < 0){
+    this.value = 0;
+  }
+});
+
+document
+.getElementById("editBalanceAmount")
+.addEventListener("input",function(){
+  if(parseFloat(this.value || 0) < 0){
+    this.value = 0;
+  }
+});
 
 /* =========================================================
    EDIT VISIT
@@ -1904,6 +1961,9 @@ function openEditVisit(visit){
 
   document.getElementById("editFeePayment").value =
     visit.fee_payment ?? "";
+
+  document.getElementById("editBalanceAmount").value =
+    visit.balance_amount ?? 0;
 
 }
 
@@ -1968,6 +2028,14 @@ async function(){
           .value
           ? parseFloat(
               document.getElementById("editFeePayment").value
+            )
+          : 0,
+
+        balance_amount:
+          document.getElementById("editBalanceAmount")
+          .value
+          ? parseFloat(
+              document.getElementById("editBalanceAmount").value
             )
           : 0
 
@@ -2499,8 +2567,11 @@ ${v.follow_up ? escapeHtml(formatDate(v.follow_up)) : "Not specified"}
 </p>
 
 <p>
-<strong>Fee:</strong>
+<strong>Fee Paid:</strong>
 ₹${escapeHtml(v.fee_payment ?? 0)}
+<br>
+<strong>Balance:</strong>
+₹${escapeHtml(v.balance_amount ?? 0)}
 </p>
 
 </div>
@@ -2890,30 +2961,31 @@ function(event){
 
 
 /* =========================================================
-   GET MONTHLY BACKUP DATA
+   GET DATE-RANGE BACKUP DATA
    ========================================================= */
 
 async function getMonthlyBackupData(){
 
-  const month =
-    document.getElementById("backupMonth").value;
+  const from =
+    document.getElementById("backupFromDate").value;
 
-  if(!month){
-    throw new Error("Please select a month.");
+  const to =
+    document.getElementById("backupToDate").value;
+
+  if(!from || !to){
+    throw new Error("Please select both From Date and To Date.");
   }
 
-  const start =
-    getMonthStart(month);
-
-  const end =
-    getNextMonth(month);
+  if(from > to){
+    throw new Error("From Date cannot be later than To Date.");
+  }
 
   const result =
     await supabaseClient
     .from("visits")
     .select("*")
-    .gte("visit_date",start)
-    .lt("visit_date",end)
+    .gte("visit_date",from)
+    .lte("visit_date",to)
     .order(
       "visit_date",
       {ascending:true}
@@ -2969,7 +3041,8 @@ async function getMonthlyBackupData(){
   );
 
   return {
-    month,
+    from,
+    to,
     visits,
     patientMap
   };
@@ -2986,6 +3059,49 @@ function backupSuccess(text){
   );
 
 }
+
+
+/* =========================================================
+   VALIDATE BACKUP DATES
+   ========================================================= */
+
+monthlyBackupButton.addEventListener(
+"click",
+function(){
+
+  const from =
+    document.getElementById("backupFromDate").value;
+
+  const to =
+    document.getElementById("backupToDate").value;
+
+  if(!from || !to){
+
+    showMessage(
+      "backupMessage",
+      "Please select both From Date and To Date.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  if(from > to){
+
+    showMessage(
+      "backupMessage",
+      "From Date cannot be later than To Date.",
+      "error"
+    );
+
+    return;
+
+  }
+
+  backupModal.classList.remove("hidden");
+
+});
 
 
 /* =========================================================
@@ -3041,6 +3157,7 @@ async function(){
 <td>${escapeHtml(v.prescription || "")}</td>
 <td>${escapeHtml(v.advice || "")}</td>
 <td>₹${fee.toFixed(2)}</td>
+<td>₹${(parseFloat(v.balance_amount || 0) || 0).toFixed(2)}</td>
 </tr>`;
     });
 
@@ -3049,7 +3166,7 @@ async function(){
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Monthly Backup - ${escapeHtml(data.month)}</title>
+<title>Backup - ${escapeHtml(data.from)} to ${escapeHtml(data.to)}</title>
 <style>
 @page{size:A4 landscape;margin:8mm;}
 body{font-family:Arial,sans-serif;font-size:9px;color:#222;}
@@ -3068,19 +3185,19 @@ th{background:#176b4d;color:white;}
 </head>
 <body>
 <h1>NEHA HOMOEOPATHIC CLINIC</h1>
-<h2>Monthly Patient Backup - ${escapeHtml(data.month)}</h2>
+<h2>Patient Backup - ${escapeHtml(formatDate(data.from))} to ${escapeHtml(formatDate(data.to))}</h2>
 <div class="summary">
 <div class="summary-box"><div class="summary-label">TOTAL PATIENTS</div><div class="summary-value">${totalPatients}</div></div>
 <div class="summary-box"><div class="summary-label">TOTAL AMOUNT</div><div class="summary-value">₹${totalAmount.toFixed(2)}</div></div>
 </div>
 <table>
-<thead><tr><th>S.No.</th><th>Date</th><th>Patient Name</th><th>Age</th><th>Gender</th><th>Mobile</th><th>Diagnosis</th><th>Prescription</th><th>Advice</th><th>Fee</th></tr></thead>
+<thead><tr><th>S.No.</th><th>Date</th><th>Patient Name</th><th>Age</th><th>Gender</th><th>Mobile</th><th>Diagnosis</th><th>Prescription</th><th>Advice</th><th>Fee Paid</th><th>Balance</th></tr></thead>
 <tbody>
 ${rows}
-<tr class="total-row"><td colspan="9" style="text-align:right">TOTAL</td><td>₹${totalAmount.toFixed(2)}</td></tr>
+<tr class="total-row"><td colspan="9" style="text-align:right">TOTAL</td><td>₹${totalAmount.toFixed(2)}</td><td>₹${data.visits.reduce((sum,v) => sum + (parseFloat(v.balance_amount || 0) || 0), 0).toFixed(2)}</td></tr>
 </tbody>
 </table>
-<div class="footer">Total Patients: ${totalPatients} &nbsp; | &nbsp; Total Amount: ₹${totalAmount.toFixed(2)}</div>
+<div class="footer">Total Patients: ${totalPatients} &nbsp; | &nbsp; Total Amount Paid: ₹${totalAmount.toFixed(2)} &nbsp; | &nbsp; Total Balance: ₹${data.visits.reduce((sum,v) => sum + (parseFloat(v.balance_amount || 0) || 0), 0).toFixed(2)}</div>
 <script>
 window.onload=function(){setTimeout(function(){window.print();},500);};
 <\/script>
@@ -3089,7 +3206,7 @@ window.onload=function(){setTimeout(function(){window.print();},500);};
 
     printWindow.document.close();
 
-    backupSuccess("Monthly PDF report opened. Choose Save as PDF in the print window.");
+    backupSuccess("PDF backup opened. Choose Save as PDF in the print window.");
 
   }catch(error){
     showMessage("backupMessage","Backup error: " + error.message,"error");
@@ -3143,6 +3260,7 @@ async function(){
 <th>Advice</th>
 <th>Follow-up</th>
 <th>Fee Payment</th>
+<th>Balance Amount</th>
 
 </tr>
 
@@ -3174,6 +3292,7 @@ async function(){
 <td>${escapeHtml(v.advice || "")}</td>
 <td>${escapeHtml(v.follow_up || "")}</td>
 <td>${escapeHtml(v.fee_payment || 0)}</td>
+<td>${escapeHtml(v.balance_amount || 0)}</td>
 
 </tr>
 
@@ -3200,7 +3319,9 @@ async function(){
     downloadBlob(
       blob,
       "NEHA_CLINIC_" +
-      data.month +
+      data.from +
+      "_TO_" +
+      data.to +
       "_BACKUP.xls"
     );
 
@@ -3260,7 +3381,8 @@ async function(){
       "Prescription / Medicines",
       "Advice",
       "Follow-up",
-      "Fee Payment"
+      "Fee Payment",
+      "Balance Amount"
 
     ]];
 
@@ -3287,7 +3409,8 @@ async function(){
           v.prescription || "",
           v.advice || "",
           v.follow_up || "",
-          v.fee_payment || 0
+          v.fee_payment || 0,
+          v.balance_amount || 0
 
         ]);
 
@@ -3319,7 +3442,7 @@ async function(){
     downloadBlob(
       blob,
       "NEHA_CLINIC_" +
-      data.month +
+      data.from +
       "_BACKUP.csv"
     );
 
@@ -3376,8 +3499,10 @@ async function(){
       "             MONTHLY PATIENT BACKUP\n";
 
     text +=
-      "             MONTH: " +
-      data.month +
+      "             DATE RANGE: " +
+      data.from +
+      " TO " +
+      data.to +
       "\n";
 
     text +=
@@ -3462,6 +3587,11 @@ async function(){
         text +=
           "FEE PAYMENT: ₹" +
           (v.fee_payment || 0) +
+          "\n";
+
+        text +=
+          "BALANCE AMOUNT: ₹" +
+          (v.balance_amount || 0) +
           "\n\n";
 
       }
@@ -3487,7 +3617,7 @@ async function(){
     downloadBlob(
       blob,
       "NEHA_CLINIC_" +
-      data.month +
+      data.from +
       "_BACKUP.txt"
     );
 
