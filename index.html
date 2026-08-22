@@ -499,11 +499,17 @@ Cancel
 <label>Balance Amount (₹)</label>
 <input id="balanceAmount" type="number" step="0.01" min="0" value="0" placeholder="Enter remaining balance">
 
-<label>Paid Today (₹)</label>
+<label>Paid Today (₹) — Calculated Automatically</label>
 <input id="paidToday" type="number" step="0.01" min="0" value="0" readonly>
 
 <div id="paymentCalculation" class="message" style="margin-top:8px"></div>
-<div class="message" style="margin-top:8px">If the patient is only clearing an old balance, enter <strong>Today's Fee = ₹0</strong> and set <strong>Balance Amount = ₹0</strong>.</div>
+<div id="paymentStatus" class="message" style="margin-top:8px;font-weight:bold"></div>
+<div class="message" style="margin-top:8px">
+<strong>Payment rule:</strong> Balance Amount means the amount still unpaid after today's payment.
+Leave it at <strong>₹0</strong> when the patient pays the full amount.
+If the patient pays only part of the amount, enter only the remaining balance.
+If the patient is only clearing an old balance, keep <strong>Today's Fee = ₹0</strong> and <strong>Balance Amount = ₹0</strong>.
+</div>
 
 <button id="saveVisitButton" type="button">
 Save Visit
@@ -1836,19 +1842,30 @@ function updatePaymentCalculation(){
   document.getElementById("paidToday").value = paid.toFixed(2);
 
   const message = document.getElementById("paymentCalculation");
+  const status = document.getElementById("paymentStatus");
+
+  if(status){
+    if(balance <= 0){
+      status.innerHTML = "Payment Status: <strong>PAID</strong>";
+    }else{
+      status.innerHTML =
+        "Payment Status: <strong>BALANCE DUE</strong> — ₹" +
+        balance.toFixed(2);
+    }
+  }
 
   if(previous > 0){
     message.innerHTML =
       "Previous Balance: <strong>₹" + previous.toFixed(2) +
       "</strong> + Today's Fee: <strong>₹" + todayFee.toFixed(2) +
-      "</strong> = Total Due: <strong>₹" + totalDue.toFixed(2) +
-      "</strong><br>Paid Today: <strong>₹" + paid.toFixed(2) +
-      "</strong> | Remaining Balance: <strong>₹" + balance.toFixed(2) + "</strong>";
+      "</strong> = <strong>Total Due: ₹" + totalDue.toFixed(2) +
+      "</strong><br>Paid Today (automatic): <strong>₹" + paid.toFixed(2) +
+      "</strong> | Balance Remaining: <strong>₹" + balance.toFixed(2) + "</strong>";
   }else{
     message.innerHTML =
       "Today's Fee: <strong>₹" + todayFee.toFixed(2) +
-      "</strong> | Paid Today: <strong>₹" + paid.toFixed(2) +
-      "</strong> | Remaining Balance: <strong>₹" + balance.toFixed(2) + "</strong>";
+      "</strong> | Paid Today (automatic): <strong>₹" + paid.toFixed(2) +
+      "</strong> | Balance Remaining: <strong>₹" + balance.toFixed(2) + "</strong>";
   }
 }
 
@@ -1856,29 +1873,22 @@ function preparePaymentFields(){
 
   const previous = getCurrentOutstandingBalance();
 
-  document.getElementById("previousBalance").value = previous.toFixed(2);
+  // Previous balance is shown separately.
+  // Balance Amount is the amount STILL OWED after today's payment.
+  // Default 0 = patient is fully paid.
+  document.getElementById("previousBalance").value =
+    previous.toFixed(2);
+
   document.getElementById("feePayment").value = "0";
-  document.getElementById("balanceAmount").value = previous.toFixed(2);
-  document.getElementById("feePayment").dataset.autoBalance = "true";
+
+  document.getElementById("balanceAmount").value = "0";
+
   document.getElementById("paidToday").value = "0.00";
 
   updatePaymentCalculation();
 }
 
 document.getElementById("feePayment").addEventListener("input", function(){
-  const previous = parseFloat(document.getElementById("previousBalance").value || 0) || 0;
-  const oldBalance = parseFloat(document.getElementById("balanceAmount").value || 0) || 0;
-  const oldFee = parseFloat(this.dataset.lastFee || 0) || 0;
-  const newFee = parseFloat(this.value || 0) || 0;
-
-  // When starting a new visit, automatically carry the previous balance
-  // forward and add today's fee to it.
-  if(this.dataset.autoBalance === "true"){
-    const newBalance = previous + newFee;
-    document.getElementById("balanceAmount").value = newBalance.toFixed(2);
-    this.dataset.autoBalance = "false";
-  }
-
   updatePaymentCalculation();
 });
 
@@ -2004,7 +2014,7 @@ async function(){
     document.getElementById("advice").value="";
     document.getElementById("followUp").value="";
     document.getElementById("feePayment").value="0";
-    document.getElementById("balanceAmount").value=balance.toFixed(2);
+    document.getElementById("balanceAmount").value="0";
     document.getElementById("previousBalance").value=balance.toFixed(2);
     document.getElementById("paidToday").value="0.00";
     document.getElementById("visitDate").value=getLocalDate();
